@@ -9,4 +9,6 @@ repository with the game Shadow_Breach (first assignment for the third semester)
 Но будьте осторожны: не всё, что скрыто во тьме, желает вам добра. Готовы ли вы бросить вызов судьбе и разорвать оковы теней? Ваша легенда начинается здесь.
 ![игровое поле](https://github.com/netblinhorek/Game_Shadow_Breach/blob/main/resources/игровое%20поле.png?raw=true)
 
-![обчение игрока](https://github.com/netblinhorek/Game_Shadow_Breach/blob/main/resources/обучение.png?raw=true)
+![обучение игрока](https://github.com/netblinhorek/Game_Shadow_Breach/blob/main/resources/обучение.png?raw=true)
+
+![таблица](https://github.com/netblinhorek/Game_Shadow_Breach/blob/main/resources/обучение.png?raw=true)
