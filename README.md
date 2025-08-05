@@ -11,4 +11,4 @@ repository with the game Shadow_Breach (first assignment for the third semester)
 
 ![обучение игрока](https://github.com/netblinhorek/Game_Shadow_Breach/blob/main/resources/обучение.png?raw=true)
 
-![таблица](https://github.com/netblinhorek/Game_Shadow_Breach/blob/main/resources/обучение.png?raw=true)
+![таблица](https://github.com/netblinhorek/Game_Shadow_Breach/blob/main/resources/таблица%20_1.png?raw=true)
