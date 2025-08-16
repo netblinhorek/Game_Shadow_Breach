@@ -2,7 +2,7 @@
 #include "loot.h"
 #include "tvector.h"
 #include "map_object.h"
-#include "inventory.h"
+#include "C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Inventory\\inventory.h"
 class Character : public Map_Object {
 protected:
     
