@@ -3,14 +3,16 @@
 #include "characters.h"
 #include "loot.h"
 #include "tvector.h"
+
 class GameMap {
 private:
-    TVector<Map_Object*> mapObjects;
+    TVector<Map_Object*> map_objects;
+
 public:
     GameMap();
-    void placeObject(Map_Object* obj);
-    void placeObjectAt(Map_Object* obj, float x, float y);
-    Map_Object* getObjectAt(float x, float y);
-    bool isGameObjectAt(float x, float y);
-    void generateRandomStartMap(const TVector <Character*>& characters, const TVector <Loot*>& items);
+    void place_object(Map_Object* obj);
+    void place_object_at(Map_Object* obj, float x, float y);
+    Map_Object* get_object_at(float x, float y);
+    bool is_game_object_at(float x, float y);
+    void generate_random_start_map(const TVector<Character*>& characters, const TVector<Loot*>& items);
 };
