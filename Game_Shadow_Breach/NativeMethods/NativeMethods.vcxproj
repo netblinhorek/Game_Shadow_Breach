@@ -20,10 +20,10 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
-    <ProjectGuid>{ef25932a-e38c-4830-9d61-81da42e31f32}</ProjectGuid>
+    <ProjectGuid>{6cfa230e-378f-4cdf-8680-4e3a20f5a884}</ProjectGuid>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <Keyword>ManagedCProj</Keyword>
-    <RootNamespace>Settings</RootNamespace>
+    <RootNamespace>NativeMethods</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -42,7 +42,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CLRSupport>true</CLRSupport>
@@ -80,17 +80,14 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Game_Shadow_Breach\Game_Shadow_Breach\Main;C:\Game_Shadow_Breach\Game_Shadow_Breach\NativeMethods;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Game_Shadow_Breach\Game_Shadow_Breach\Settings;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies />
       <SubSystem>Windows</SubSystem>
       <EntryPointSymbol>main</EntryPointSymbol>
-      <AdditionalLibraryDirectories>C:\Game_Shadow_Breach\Game_Shadow_Breach\Main;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-    </Link>
-    <Lib>
       <AdditionalLibraryDirectories>C:\Game_Shadow_Breach\Game_Shadow_Breach\NativeMethods;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-    </Lib>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -135,7 +132,7 @@
     <ResourceCompile Include="app.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Settings.h">
+    <ClInclude Include="NativeMethods.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="pch.h" />
@@ -163,14 +160,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Main\Main.vcxproj">
-      <Project>{5a699a61-a5db-413f-b5d2-e21952090b6d}</Project>
-    </ProjectReference>
+    <EmbeddedResource Include="NativeMethods.resx">
+      <DependentUpon>NativeMethods.h</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Settings.resx">
-      <DependentUpon>Settings.h</DependentUpon>
-    </EmbeddedResource>
+    <ProjectReference Include="..\Settings\Settings.vcxproj">
+      <Project>{ef25932a-e38c-4830-9d61-81da42e31f32}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

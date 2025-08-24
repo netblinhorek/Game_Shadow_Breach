@@ -101,7 +101,7 @@ namespace CppCLRWinFormsProject {
 			// 
 			// button2  
 			// 
-			this->button2->Location = System::Drawing::Point(85, 410); 
+			this->button2->Location = System::Drawing::Point(85, 415); 
 			this->button2->Name = L"button2";
 			this->button2->Size = System::Drawing::Size(220, 70);
 			this->button2->TabIndex = 2;
@@ -121,7 +121,7 @@ namespace CppCLRWinFormsProject {
 			// 
 			// button3
 			// 
-			this->button3->Location = System::Drawing::Point(85, 470);
+			this->button3->Location = System::Drawing::Point(85, 480);
 			this->button3->Name = L"button3";
 			this->button3->Size = System::Drawing::Size(220, 70);
 			this->button3->TabIndex = 2;
@@ -142,7 +142,7 @@ namespace CppCLRWinFormsProject {
 			// button4
 			// 
 			this->button4 = (gcnew System::Windows::Forms::Button());
-			this->button4->Location = System::Drawing::Point(85, 530);
+			this->button4->Location = System::Drawing::Point(85, 545);
 			this->button4->Name = L"button4";
 			this->button4->Size = System::Drawing::Size(220, 70);
 			this->button4->TabIndex = 5;
@@ -210,9 +210,7 @@ namespace CppCLRWinFormsProject {
 			try
 			{
 				CppCLRWinFormsProject::Settings^ settings = gcnew CppCLRWinFormsProject::Settings();
-				this->Hide();
-				settings->ShowDialog();
-				this->Close();
+				settings->ShowDialog(); // ѕросто показываем диалог, не скрыва€ главную форму
 			}
 			catch (Exception^ ex)
 			{
