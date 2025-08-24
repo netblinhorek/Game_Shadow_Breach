@@ -1,5 +1,5 @@
 #pragma once
-#include "loot.h"
+#include "../Loot/loot.h"
 #include <string>
 
 class Armor : public Loot {

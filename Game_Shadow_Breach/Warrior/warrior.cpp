@@ -1,5 +1,4 @@
-// Warrior.cpp
-#include "warrior.h"
+#include "../Warrior/warrior.h"
 #include <stdexcept>
 
 Warrior::Warrior()

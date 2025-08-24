@@ -1,5 +1,4 @@
-// Enemy.cpp
-#include "enemy.h"
+#include "../Enemy/enemy.h"
 #include <chrono>
 
 Enemy::Enemy(int x, int y, float health, float damage, float cooldown,

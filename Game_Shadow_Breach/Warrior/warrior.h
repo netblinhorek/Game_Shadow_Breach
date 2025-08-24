@@ -1,6 +1,6 @@
 #pragma once
-#include "characters.h"
-#include "tvector.h"
+#include "../Characters/characters.h"
+#include "../TVector/tvector.h"
 #include <string>
 
 class Warrior : public Character {

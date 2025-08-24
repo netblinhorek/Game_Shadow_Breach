@@ -1,6 +1,6 @@
 #pragma once
-#include "C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Loot\\loot.h"
-#include "C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\TVector\\tvector.h"
+#include "../Loot/loot.h"
+#include "../TVector/tvector.h"
 
 class Inventory {
 private:

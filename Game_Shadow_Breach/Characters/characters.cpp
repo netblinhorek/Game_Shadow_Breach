@@ -1,5 +1,5 @@
 // Character.cpp
-#include "characters.h"
+#include "../Characters/characters.h"
 #include <stdexcept>
 
 void Character::take_damage(int amount) {

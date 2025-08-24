@@ -1,5 +1,5 @@
 #pragma once
-#include "map_object.h"
+#include "../Map_Object/map_object.h"
 
 class Key : public Map_Object {
 private:

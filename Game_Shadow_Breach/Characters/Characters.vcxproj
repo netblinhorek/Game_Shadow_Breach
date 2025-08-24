@@ -104,14 +104,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Game_Shadow_Breach\Game_Shadow_Breach\Loot;C:\Game_Shadow_Breach\Game_Shadow_Breach\TVector;C:\Game_Shadow_Breach\Game_Shadow_Breach\Map_Object;C:\Game_Shadow_Breach\Game_Shadow_Breach\Inventory;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Loot;../TVector;../Map_Object;../Inventory;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>C:\Game_Shadow_Breach\Game_Shadow_Breach\Loot;C:\Game_Shadow_Breach\Game_Shadow_Breach\TVector;C:\Game_Shadow_Breach\Game_Shadow_Breach\Map_Object;C:\Game_Shadow_Breach\Game_Shadow_Breach\Inventory;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../Loot;../TVector;../Map_Object;../Inventory;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

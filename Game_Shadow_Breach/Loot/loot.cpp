@@ -1,5 +1,5 @@
 // Loot.cpp
-#include "loot.h"
+#include "../Loot/loot.h"
 #include <stdexcept>
 
 Loot::Loot(float w, int x, int y, std::string id)

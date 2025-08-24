@@ -111,7 +111,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>C:\Game_Shadow_Breach\Game_Shadow_Breach\Map_Object;C:\Game_Shadow_Breach\Game_Shadow_Breach\Characters;C:\Game_Shadow_Breach\Game_Shadow_Breach\Loot;C:\Game_Shadow_Breach\Game_Shadow_Breach\TVector;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../Map_Object;../Characters;../Loot;../TVector;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

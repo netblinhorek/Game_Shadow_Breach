@@ -1,4 +1,4 @@
-#include "game_card.h"
+#include "../Game_card/game_card.h"
 #include <stdexcept>
 #include <random>
 

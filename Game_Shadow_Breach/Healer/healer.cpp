@@ -1,4 +1,4 @@
-#include "healer.h"
+#include "../Healer/healer.h"
 #include <stdexcept>
 
 Healer::Healer(int x, int y, float health, float speed,

@@ -1,4 +1,4 @@
-#include "key.h"
+#include "../Key/key.h"
 #include <stdexcept>
 
 Key::Key(int id, float x, float y, int door_id)

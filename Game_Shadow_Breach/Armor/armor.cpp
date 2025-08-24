@@ -1,4 +1,4 @@
-#include "armor.h"
+#include "../Armor/armor.h"
 #include <stdexcept>
 
 Armor::Armor(float weight, int x, int y, const std::string& id,

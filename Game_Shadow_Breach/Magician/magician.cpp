@@ -1,4 +1,4 @@
-#include "magician.h"
+#include "../Magician/magician.h"
 #include <stdexcept>
 
 Magician::Magician(int x, int y, float health, float speed,

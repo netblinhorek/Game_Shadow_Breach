@@ -17,7 +17,7 @@ namespace CppCLRWinFormsProject {
 		Main(void)
 		{
 			InitializeComponent();
-			LoadBackgroundImage(); // Загружаем изображение при создании формы
+			LoadBackgroundImage(); 
 		}
 
 	protected:
@@ -39,19 +39,16 @@ namespace CppCLRWinFormsProject {
 	private:
 		System::ComponentModel::Container^ components;
 
-		// Метод для загрузки фонового изображения
+		
 		void LoadBackgroundImage()
 		{
 			try
 			{
-				String^ imagePath = "C:\\Users\\redmi\\Pictures\\Screenshots\\Снимок экрана 2025-08-15 000232.png";
-
-				// Проверяем существование файла
+				String^ imagePath = "меню.png";
 				if (System::IO::File::Exists(imagePath))
 				{
-					// Загружаем изображение в PictureBox
 					pictureBox1->Image = Image::FromFile(imagePath);
-					pictureBox1->SizeMode = PictureBoxSizeMode::Zoom; // Масштабируем по размеру
+					pictureBox1->SizeMode = PictureBoxSizeMode::Zoom; 
 				}
 				else
 				{

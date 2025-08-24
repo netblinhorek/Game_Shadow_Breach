@@ -1,5 +1,5 @@
 #pragma once
-#include "C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Loot\\loot.h"
+#include "../Loot/loot.h"
 #include <string>
 
 class Weapon : public Loot {

@@ -1,5 +1,4 @@
-// Map_Object.cpp
-#include "map_object.h"
+#include "../Map_Object/map_object.h"
 #include <stdexcept>
 
 Map_Object::Map_Object(int x, int y, float speed, std::string object_type, std::string id)

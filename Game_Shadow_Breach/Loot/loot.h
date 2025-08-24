@@ -1,5 +1,5 @@
 #pragma once
-#include "C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Map_Object\\map_object.h"  // Используем относительный путь
+#include "../Map_Object/map_object.h"  // Используем относительный путь
 
 class Loot : public Map_Object {
 protected:

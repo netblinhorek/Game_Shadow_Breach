@@ -1,8 +1,8 @@
 #pragma once
-#include "map_object.h"
-#include "characters.h"
-#include "loot.h"
-#include "tvector.h"
+#include "../Map_Object/map_object.h"
+#include "../Characters/characters.h"
+#include "../Loot/loot.h"
+#include "../TVector/tvector.h"
 
 class GameMap {
 private:

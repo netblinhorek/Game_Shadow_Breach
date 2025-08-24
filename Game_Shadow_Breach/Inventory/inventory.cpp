@@ -1,5 +1,4 @@
-// Inventory.cpp
-#include "inventory.h"
+#include "../Inventory/inventory.h"
 #include <stdexcept>
 
 Inventory::Inventory(float max_weight)

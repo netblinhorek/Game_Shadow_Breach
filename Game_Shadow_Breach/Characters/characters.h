@@ -1,8 +1,8 @@
 #pragma once
-#include "C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Loot\\loot.h"
-#include "C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\TVector\\tvector.h"
-#include "C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Map_Object\\map_object.h"
-#include "C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Inventory\\inventory.h"
+#include "../Loot/loot.h"
+#include "../TVector/tvector.h"
+#include "../Map_Object/map_object.h"
+#include "../Inventory/inventory.h"
 
 class Character : public Map_Object {
 protected:

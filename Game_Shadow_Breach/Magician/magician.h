@@ -1,7 +1,7 @@
 #pragma once
-#include "characters.h"
-#include "potion.h"
-#include "tvector.h"
+#include "../Characters/characters.h"
+#include "../Potion/potion.h"
+#include "../TVector/tvector.h"
 
 class Magician : public Character {
 private:

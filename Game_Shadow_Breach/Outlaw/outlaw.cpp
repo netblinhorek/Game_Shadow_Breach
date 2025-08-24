@@ -1,4 +1,4 @@
-#include "outlaw.h"
+#include "../Outlaw/outlaw.h"
 #include <stdexcept>
 #include <random>
 

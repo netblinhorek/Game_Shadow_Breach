@@ -1,5 +1,5 @@
 #pragma once
-#include "characters.h"
+#include "../Characters/characters.h"
 
 class Outlaw : public Character {
 private:

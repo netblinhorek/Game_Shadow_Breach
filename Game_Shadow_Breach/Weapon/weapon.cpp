@@ -1,5 +1,5 @@
 // Weapon.cpp
-#include "weapon.h"
+#include "../Weapon/weapon.h"
 #include <stdexcept>
 
 Weapon::Weapon(float weight, int x, int y, const std::string& id,
