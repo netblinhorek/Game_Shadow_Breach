@@ -80,7 +80,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../Main;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Main;../Characters;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies />
@@ -88,6 +88,9 @@
       <EntryPointSymbol>main</EntryPointSymbol>
       <AdditionalLibraryDirectories>C:\Game_Shadow_Breach\Game_Shadow_Breach\Main;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>../Characters;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -165,6 +168,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Characters\Characters.vcxproj">
+      <Project>{b115b59b-2fc2-40b5-87ff-d8537ef41bbe}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Main\Main.vcxproj">
       <Project>{5a699a61-a5db-413f-b5d2-e21952090b6d}</Project>
     </ProjectReference>

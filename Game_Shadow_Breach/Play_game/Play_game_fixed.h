@@ -11,6 +11,7 @@ namespace CppCLRWinFormsProject {
     using namespace System::Data;
     using namespace System::Drawing;
 
+    // Класс для игрового персонажа
     public ref class GameCharacter
     {
     public:
@@ -84,15 +85,18 @@ namespace CppCLRWinFormsProject {
         System::Windows::Forms::PictureBox^ playerSprite;
         System::Windows::Forms::PictureBox^ enemySprite;
 
+        // Игровые персонажи Character
         GameCharacter^ playerCharacter;
         GameCharacter^ enemyCharacter;
 
+        // UI элементы интерфейса/панели
         System::Windows::Forms::Label^ labelHealthStatus;
         System::Windows::Forms::ListBox^ backpackList;
         System::Windows::Forms::Panel^ tutorialPanel;
         System::Windows::Forms::Label^ tutorialLabel;
         System::Windows::Forms::Button^ tutorialNextButton;
 
+        // Переменные игры
         bool tutorialCompleted;
         int tutorialStep;
         bool hasGun;
@@ -101,12 +105,14 @@ namespace CppCLRWinFormsProject {
         System::Windows::Forms::Timer^ enemyTimer;
         System::Random^ rng;
 
+        // Направления движения персонажа
         enum class Direction { Up, Right, Down, Left };
         Direction playerDirection;
         bool isMoving;
         bool useRightStep;
         Timer^ playerAnimTimer;
 
+        // Спрайты анимации (idle и шаги)
         Bitmap^ idleUp;    Bitmap^ idleRight; Bitmap^ idleDown;  Bitmap^ idleLeft;
         Bitmap^ stepUpRight;    Bitmap^ stepUpLeft;
         Bitmap^ stepRightRight; Bitmap^ stepRightLeft;
@@ -123,8 +129,13 @@ namespace CppCLRWinFormsProject {
         {
             try
             {
+                // Попытка загрузить фоновое изображение из разных путей
                 array<String^>^ possiblePaths = {
-                    "����.png"
+                    "фон.png",
+                    "backgrounds/фон.png",
+                    "images/фон.png",
+                    "../../Player_game/фон.png",
+                    "C:\\Users\\redmi\\Pictures\\фон.png" // Абсолютный путь к изображению
                 };
 
                 bool imageLoaded = false;
@@ -134,7 +145,7 @@ namespace CppCLRWinFormsProject {
                     {
                         pictureBox1->Image = Image::FromFile(path);
                         pictureBox1->SizeMode = PictureBoxSizeMode::StretchImage;
-                        pictureBox1->Dock = DockStyle::Fill; 
+                        pictureBox1->Dock = DockStyle::Fill; // Растягиваем на весь экран
                         imageLoaded = true;
                         break;
                     }
@@ -143,15 +154,15 @@ namespace CppCLRWinFormsProject {
                 if (!imageLoaded)
                 {
                     pictureBox1->BackColor = Color::LightGray;
-                    MessageBox::Show("������� ����������� �� �������!", "��������������",
+                    MessageBox::Show("Фоновое изображение не найдено!", "Предупреждение",
                         MessageBoxButtons::OK, MessageBoxIcon::Warning);
                 }
             }
             catch (Exception^ ex)
             {
                 pictureBox1->BackColor = Color::LightGray;
-                MessageBox::Show("������ �������� �����������: " + ex->Message,
-                    "������", MessageBoxButtons::OK, MessageBoxIcon::Error);
+                MessageBox::Show("Ошибка загрузки изображения: " + ex->Message,
+                    "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
             }
         }
         
@@ -163,26 +174,27 @@ namespace CppCLRWinFormsProject {
             return bmp;
         }
         
-        // �������� ����������� ������
+        // Загрузка изображений игрока
         void LoadPlayerImages()
         {
-            
-            idleUp = LoadBmpTransparentWhite("W.jpg");
-            idleRight = LoadBmpTransparentWhite("D.png");
-            idleDown = LoadBmpTransparentWhite("S.png");
-            idleLeft = LoadBmpTransparentWhite("A.png");
+            // Стояние (idle)
+            idleUp = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\W.jpg");
+            idleRight = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\D.png");
+            idleDown = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\S.png");
+            idleLeft = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\A.png");
 
-            // ����
-            stepUpRight   = LoadBmpTransparentWhite("���_������_����_W.png");
-            stepUpLeft    = LoadBmpTransparentWhite("���_�����_����_W.png");
-            stepRightRight= LoadBmpTransparentWhite("���_������_����_D.png");
-            stepRightLeft = LoadBmpTransparentWhite("���_�����_����_D.png");
-            stepDownRight = LoadBmpTransparentWhite("���_������_����_S.png");
-            stepDownLeft  = LoadBmpTransparentWhite("���_�����_����_S.png");
-            stepLeftRight = LoadBmpTransparentWhite("���_������_����_A.png");
-            stepLeftLeft  = LoadBmpTransparentWhite("���_�����_����_A.png");
+            // Шаги
+            stepUpRight   = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\Шаг_правая_нога_W.png");
+            stepUpLeft    = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\Шаг_левая_нога_W.png");
+            stepRightRight= LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\Шаг_правая_нога_D.png");
+            stepRightLeft = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\Шаг_левая_нога_D.png");
+            stepDownRight = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\Шаг_правая_нога_S.png");
+            stepDownLeft  = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\Шаг_левая_нога_S.png");
+            stepLeftRight = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\Шаг_правая_нога_A.png");
+            stepLeftLeft  = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\Шаг_левая_нога_A.png");
         }
 
+        // Обновление изображения игрока
         void UpdatePlayerImage()
         {
             if (!isMoving)
@@ -197,6 +209,7 @@ namespace CppCLRWinFormsProject {
                 return;
             }
 
+            // Анимация
             switch (playerDirection)
             {
             case Direction::Up:
@@ -216,8 +229,10 @@ namespace CppCLRWinFormsProject {
 
         void InitializePlayer()
         {
+            // Создание игрового персонажа
             playerCharacter = gcnew GameCharacter(400, 300, 100, 5.0f, "Player");
 
+            // Создание спрайта игрока
             playerSprite = gcnew PictureBox();
             playerSprite->Size = System::Drawing::Size(50, 50);
             playerSprite->Location = System::Drawing::Point(playerCharacter->X, playerCharacter->Y);
@@ -225,6 +240,7 @@ namespace CppCLRWinFormsProject {
             playerSprite->BackgroundImage = nullptr;
             playerSprite->BackgroundImageLayout = ImageLayout::None;
 
+            // Загрузка изображений
             try
             {
                 LoadPlayerImages();
@@ -275,11 +291,13 @@ namespace CppCLRWinFormsProject {
             this->KeyDown += gcnew KeyEventHandler(this, &Play_game::Form_KeyDown);
             this->KeyUp += gcnew KeyEventHandler(this, &Play_game::Form_KeyUp);
 
+            // Таймер анимации игрока
             playerAnimTimer = gcnew Timer();
-            playerAnimTimer->Interval = 150; 
+            playerAnimTimer->Interval = 150; // 150 миллисекунд между кадрами
             playerAnimTimer->Tick += gcnew EventHandler(this, &Play_game::PlayerAnimTimer_Tick);
             playerAnimTimer->Start();
 
+            // Создание панели обучения
             tutorialPanel = gcnew Panel();
             tutorialPanel->Size = System::Drawing::Size(500, 120);
             tutorialPanel->Location = System::Drawing::Point(400, 10);
@@ -291,7 +309,7 @@ namespace CppCLRWinFormsProject {
             tutorialLabel->Location = System::Drawing::Point(10, 10);
             tutorialLabel->AutoSize = true;
             tutorialNextButton = gcnew Button();
-            tutorialNextButton->Text = "�����";
+            tutorialNextButton->Text = "Далее";
             tutorialNextButton->Location = System::Drawing::Point(400, 75);
             tutorialNextButton->Click += gcnew EventHandler(this, &Play_game::TutorialNext_Click);
             tutorialPanel->Controls->Add(tutorialLabel);
@@ -303,8 +321,10 @@ namespace CppCLRWinFormsProject {
 
         void InitializeEnemy()
         {
+            // Создание вражеского персонажа
             enemyCharacter = gcnew GameCharacter(600, 200, 80, 3.0f, "Enemy");
 
+            // Создание спрайта врага
             enemySprite = gcnew PictureBox();
             enemySprite->Size = System::Drawing::Size(50, 50);
             enemySprite->Location = System::Drawing::Point(enemyCharacter->X, enemyCharacter->Y);
@@ -312,19 +332,21 @@ namespace CppCLRWinFormsProject {
             enemySprite->BackgroundImage = nullptr;
             enemySprite->BackgroundImageLayout = ImageLayout::None;
 
+            // Загрузка изображения врага
             try
             {
-                String^ enemyImagePath = "����.png";
+                String^ enemyImagePath = "C:\\Users\\redmi\\Downloads\\508e97f6f953059896858b1a5b62985d.png";
                 if (System::IO::File::Exists(enemyImagePath))
                 {
                     Bitmap^ enemyImage = gcnew Bitmap(Image::FromFile(enemyImagePath));
-                    enemyImage->MakeTransparent(Color::White); 
+                    enemyImage->MakeTransparent(Color::White); // Делаем белый цвет прозрачным
 
                     enemySprite->Image = enemyImage;
                     enemySprite->SizeMode = PictureBoxSizeMode::StretchImage;
                 }
                 else
                 {
+                    // Если изображение не найдено, создаем текстовую метку
                     enemySprite->BackColor = Color::Transparent;
                     Label^ enemyLabel = gcnew Label();
                     enemyLabel->Text = "E";
@@ -338,6 +360,7 @@ namespace CppCLRWinFormsProject {
             }
             catch (Exception^ ex)
             {
+                // В случае ошибки также создаем текстовую метку
                 enemySprite->BackColor = Color::Transparent;
                 Label^ enemyLabel = gcnew Label();
                 enemyLabel->Text = "E";
@@ -349,17 +372,21 @@ namespace CppCLRWinFormsProject {
                 enemySprite->Controls->Add(enemyLabel);
             }
 
+            // Добавление спрайта на экран
             enemySprite->Parent = pictureBox1;
             pictureBox1->Controls->Add(enemySprite);
             enemySprite->BringToFront();
 
+            // Создание таймера движения врага (закомментировано, чтобы не двигался)
             enemyTimer = gcnew Timer();
-            enemyTimer->Interval = 100;
+            enemyTimer->Interval = 100; // Обновление каждые 100 мс
             enemyTimer->Tick += gcnew EventHandler(this, &Play_game::EnemyTimer_Tick);
+            // enemyTimer->Start(); // Закомментировано движение врага
         }
 
        void InitializePanels()
         {
+            // Создание панели статуса
             panelStatus = gcnew Panel();
             panelStatus->Size = System::Drawing::Size(200, 150);
             panelStatus->Location = System::Drawing::Point(750, 50);
@@ -376,20 +403,20 @@ namespace CppCLRWinFormsProject {
             buttonCloseStatus->Click += gcnew EventHandler(this, &Play_game::buttonCloseStatus_Click);
 
             Label^ labelStatus = gcnew Label();
-            labelStatus->Text = "����������";
+            labelStatus->Text = "Статистика";
             labelStatus->Location = System::Drawing::Point(10, 10);
             labelStatus->Font = gcnew System::Drawing::Font("Microsoft Sans Serif", 12, FontStyle::Bold);
             labelStatus->AutoSize = true;
             labelStatus->ForeColor = Color::White;
 
             labelHealthStatus = gcnew Label();
-            labelHealthStatus->Text = "��������: 100%";
+            labelHealthStatus->Text = "Здоровье: 100%";
             labelHealthStatus->Location = System::Drawing::Point(20, 50);
             labelHealthStatus->AutoSize = true;
             labelHealthStatus->ForeColor = Color::LightGreen;
 
             Label^ labelMana = gcnew Label();
-            labelMana->Text = "����: 100%";
+            labelMana->Text = "Мана: 100%";
             labelMana->Location = System::Drawing::Point(20, 80);
             labelMana->AutoSize = true;
             labelMana->ForeColor = Color::SkyBlue;
@@ -399,7 +426,7 @@ namespace CppCLRWinFormsProject {
             panelStatus->Controls->Add(labelHealthStatus);
             panelStatus->Controls->Add(labelMana);
 
-           
+            // Создание панели рюкзака
             panelBackpack = gcnew Panel();
             panelBackpack->Size = System::Drawing::Size(200, 150);
             panelBackpack->Location = System::Drawing::Point(1100, 100);
@@ -416,7 +443,7 @@ namespace CppCLRWinFormsProject {
             buttonCloseBackpack->Click += gcnew EventHandler(this, &Play_game::buttonCloseBackpack_Click);
 
             Label^ labelBackpack = gcnew Label();
-            labelBackpack->Text = "������";
+            labelBackpack->Text = "Рюкзак";
             labelBackpack->Location = System::Drawing::Point(10, 10);
             labelBackpack->Font = gcnew System::Drawing::Font("Microsoft Sans Serif", 12, FontStyle::Bold);
             labelBackpack->AutoSize = true;
@@ -433,7 +460,7 @@ namespace CppCLRWinFormsProject {
             panelBackpack->Controls->Add(labelBackpack);
             panelBackpack->Controls->Add(backpackList);
 
-           
+            // Добавление панелей на форму
             this->Controls->Add(panelStatus);
             this->Controls->Add(panelBackpack);
         }
@@ -446,8 +473,10 @@ namespace CppCLRWinFormsProject {
 
         void MovePlayer(int deltaX, int deltaY)
         {
+            // Обновление позиции персонажа
             playerCharacter->Move(deltaX, deltaY);
 
+            // Обновление позиции спрайта
             playerSprite->Location = System::Drawing::Point(
                 playerCharacter->X,
                 playerCharacter->Y
@@ -456,6 +485,7 @@ namespace CppCLRWinFormsProject {
 
         void MoveEnemyTowardsPlayer()
         {
+            // Получение координат игрока и врага
             int playerX = playerCharacter->X;
             int playerY = playerCharacter->Y;
             int enemyX = enemyCharacter->X;
@@ -464,14 +494,17 @@ namespace CppCLRWinFormsProject {
             int deltaX = 0;
             int deltaY = 0;
 
+            // Движение towards игрока
             if (enemyX < playerX) deltaX = 1;
             else if (enemyX > playerX) deltaX = -1;
 
             if (enemyY < playerY) deltaY = 1;
             else if (enemyY > playerY) deltaY = -1;
 
-            enemyCharacter->Move(deltaX * 2, deltaY * 2); 
+            // Обновление позиции врага
+            enemyCharacter->Move(deltaX * 2, deltaY * 2); // Враг движется быстрее игрока
 
+            // Обновление позиции спрайта врага
             enemySprite->Location = System::Drawing::Point(
                 enemyCharacter->X,
                 enemyCharacter->Y
@@ -492,12 +525,12 @@ namespace CppCLRWinFormsProject {
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->BeginInit();
             this->SuspendLayout();
 
-            // buttonExit 
+            // buttonExit (Выход)
             this->buttonExit->Location = System::Drawing::Point(5, 5);
             this->buttonExit->Name = L"buttonExit";
             this->buttonExit->Size = System::Drawing::Size(150, 75);
             this->buttonExit->TabIndex = 0;
-            this->buttonExit->Text = L"�����";
+            this->buttonExit->Text = L"Выход";
             this->buttonExit->UseVisualStyleBackColor = true;
             this->buttonExit->BackColor = System::Drawing::Color::FromArgb(30,30,30);
             this->buttonExit->ForeColor = System::Drawing::Color::White;
@@ -508,12 +541,12 @@ namespace CppCLRWinFormsProject {
             this->buttonExit->Cursor = System::Windows::Forms::Cursors::Hand;
             this->buttonExit->Click += gcnew System::EventHandler(this, &Play_game::buttonExit_Click);
 
-            // buttonStatus 
+            // buttonStatus (Статистика)
             this->buttonStatus->Location = System::Drawing::Point(1150, 5);
             this->buttonStatus->Name = L"buttonStatus";
             this->buttonStatus->Size = System::Drawing::Size(150, 75);
             this->buttonStatus->TabIndex = 1;
-            this->buttonStatus->Text = L"����������";
+            this->buttonStatus->Text = L"Статистика";
             this->buttonStatus->UseVisualStyleBackColor = true;
             this->buttonStatus->BackColor = System::Drawing::Color::FromArgb(30,30,30);
             this->buttonStatus->ForeColor = System::Drawing::Color::White;
@@ -524,12 +557,12 @@ namespace CppCLRWinFormsProject {
             this->buttonStatus->Cursor = System::Windows::Forms::Cursors::Hand;
             this->buttonStatus->Click += gcnew System::EventHandler(this, &Play_game::buttonStatus_Click);
 
-            // buttonBackpack 
+            // buttonBackpack (Рюкзак)
             this->buttonBackpack->Location = System::Drawing::Point(1150, 720);
             this->buttonBackpack->Name = L"buttonBackpack";
             this->buttonBackpack->Size = System::Drawing::Size(150, 75);
             this->buttonBackpack->TabIndex = 3;
-            this->buttonBackpack->Text = L"������";
+            this->buttonBackpack->Text = L"Рюкзак";
             this->buttonBackpack->UseVisualStyleBackColor = true;
             this->buttonBackpack->BackColor = System::Drawing::Color::FromArgb(30,30,30);
             this->buttonBackpack->ForeColor = System::Drawing::Color::White;
@@ -540,7 +573,7 @@ namespace CppCLRWinFormsProject {
             this->buttonBackpack->Cursor = System::Windows::Forms::Cursors::Hand;
             this->buttonBackpack->Click += gcnew System::EventHandler(this, &Play_game::buttonBackpack_Click);
 
-            // pictureBox1 
+            // pictureBox1 - фон
             this->pictureBox1->Dock = System::Windows::Forms::DockStyle::Fill;
             this->pictureBox1->Location = System::Drawing::Point(0, 0);
             this->pictureBox1->Name = L"pictureBox1";
@@ -557,13 +590,14 @@ namespace CppCLRWinFormsProject {
             this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedSingle;
             this->MaximizeBox = false;
 
-            this->Controls->Add(this->pictureBox1); 
+            // Порядок: сначала фон, потом кнопки
+            this->Controls->Add(this->pictureBox1); // Сначала фон
             this->Controls->Add(this->buttonExit);
             this->Controls->Add(this->buttonStatus);
             this->Controls->Add(this->buttonBackpack);
 
             this->Name = L"Play_game";
-            this->Text = L"����";
+            this->Text = L"Игра";
             this->StartPosition = FormStartPosition::CenterScreen;
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->EndInit();
             this->ResumeLayout(false);
@@ -573,7 +607,7 @@ namespace CppCLRWinFormsProject {
     private:
         System::Void buttonExit_Click(System::Object^ sender, System::EventArgs^ e)
         {
-            if (MessageBox::Show("�� �������, ��� ������ ����� �� ����?", "�������������",
+            if (MessageBox::Show("Вы уверены, что хотите выйти из игры?", "Подтверждение",
                 MessageBoxButtons::YesNo, MessageBoxIcon::Question) == System::Windows::Forms::DialogResult::Yes)
             {
                 this->Close();
@@ -604,9 +638,10 @@ namespace CppCLRWinFormsProject {
             panelBackpack->Visible = false;
         }
 
+        // Обработка нажатий клавиш для движения персонажа
         System::Void Form_KeyDown(System::Object^ sender, System::Windows::Forms::KeyEventArgs^ e)
         {
-            int moveSpeed = 10;
+            int moveSpeed = 10; // Скорость движения персонажа
 
             switch (e->KeyCode)
             {
@@ -634,10 +669,10 @@ namespace CppCLRWinFormsProject {
                 isMoving = true;
                 MovePlayer(moveSpeed, 0);
                 break;
-            case Keys::Space: 
+            case Keys::Space: // Пробел для атаки
                 AttackEnemy();
                 break;
-            case Keys::E: 
+            case Keys::E: // E для использования
                 UsePickupIfAny();
                 break;
             }
@@ -645,12 +680,14 @@ namespace CppCLRWinFormsProject {
             UpdatePlayerImage();
         }
 
+        // Обработка отпускания клавиш для остановки анимации и перехода в idle состояние
         System::Void Form_KeyUp(System::Object^ sender, System::Windows::Forms::KeyEventArgs^ e)
         {
             isMoving = false;
             UpdatePlayerImage();
         }
 
+        // Таймер анимации игрока
         System::Void PlayerAnimTimer_Tick(System::Object^ sender, System::EventArgs^ e)
         {
             if (isMoving)
@@ -660,6 +697,7 @@ namespace CppCLRWinFormsProject {
             }
         }
 
+        // Таймер движения вражеского персонажа
         System::Void EnemyTimer_Tick(System::Object^ sender, System::EventArgs^ e)
         {
             MoveEnemyTowardsPlayer();
@@ -670,19 +708,19 @@ namespace CppCLRWinFormsProject {
             switch (tutorialStep)
             {
             case 0:
-                tutorialLabel->Text = "����������: WASD/������� ��� ��������";
+                tutorialLabel->Text = "Управление: WASD/стрелки для движения";
                 break;
             case 1:
-                tutorialLabel->Text = "������ ��� ����� ����� (������ ����� ��������)";
+                tutorialLabel->Text = "Пробел для атаки врага (только после обучения)";
                 break;
             case 2:
-                tutorialLabel->Text = "������� E ��� ������������� ���������";
+                tutorialLabel->Text = "Нажмите E для использования предметов";
                 break;
             case 3:
-                tutorialLabel->Text = "������ ������: ����������, ������, �����";
+                tutorialLabel->Text = "Другие кнопки: статистика, рюкзак, выход";
                 break;
             case 4:
-                tutorialLabel->Text = "�������� ���������. ������� ����!";
+                tutorialLabel->Text = "Обучение завершено. Удачной игры!";
                 tutorialCompleted = true;
                 tutorialPanel->Visible = false;
                 if (enemyTimer != nullptr) enemyTimer->Start();
@@ -701,7 +739,7 @@ namespace CppCLRWinFormsProject {
 
         void UpdateHealthUI()
         {
-            labelHealthStatus->Text = "��������: " + playerCharacter->Health + "%";
+            labelHealthStatus->Text = "Здоровье: " + playerCharacter->Health + "%";
         }
 
         void AttackEnemy()
@@ -712,20 +750,20 @@ namespace CppCLRWinFormsProject {
             if (enemyHealth <= 0)
             {
                 enemyHealth = 50;
-                
-                int drop = rng->Next(0, 3);
+                // Выпадение предметов
+                int drop = rng->Next(0, 3); // 0 gun, 1 key, 2 potion
                 if (drop == 0 && !hasGun)
                 {
-                    backpackList->Items->Add("��������");
+                    backpackList->Items->Add("Пистолет");
                     hasGun = true;
                 }
                 else if (drop == 1)
                 {
-                    backpackList->Items->Add("����");
+                    backpackList->Items->Add("Ключ");
                 }
                 else
                 {
-                    backpackList->Items->Add("�����");
+                    backpackList->Items->Add("Зелье");
                 }
             }
         }
@@ -735,7 +773,7 @@ namespace CppCLRWinFormsProject {
             for (int i = 0; i < backpackList->Items->Count; ++i)
             {
                 String^ item = backpackList->Items[i]->ToString();
-                if (item == "�����")
+                if (item == "Зелье")
                 {
                     backpackList->Items->RemoveAt(i);
                     playerCharacter->Health = System::Math::Min(100, playerCharacter->Health + 30);

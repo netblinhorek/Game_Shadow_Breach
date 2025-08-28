@@ -207,7 +207,7 @@ namespace CppCLRWinFormsProject {
 			try
 			{
 				CppCLRWinFormsProject::Settings^ settings = gcnew CppCLRWinFormsProject::Settings();
-				settings->ShowDialog(); // Просто показываем диалог, не скрывая главную форму
+				settings->ShowDialog(); 
 			}
 			catch (Exception^ ex)
 			{
@@ -233,7 +233,6 @@ namespace CppCLRWinFormsProject {
 		}
 		System::Void button4_Click_1(System::Object^ sender, System::EventArgs^ e)
 		{
-			// Используем полное квалифицированное имя для DialogResult
 			System::Windows::Forms::DialogResult result = MessageBox::Show(
 				"Вы уверены, что хотите выйти из программы?",
 				"Подтверждение выхода",
@@ -241,7 +240,6 @@ namespace CppCLRWinFormsProject {
 				MessageBoxIcon::Question
 			);
 
-			// Используем полное квалифицированное имя для сравнения
 			if (result == System::Windows::Forms::DialogResult::Yes)
 			{
 				Application::Exit();
