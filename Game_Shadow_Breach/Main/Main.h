@@ -44,20 +44,43 @@ namespace CppCLRWinFormsProject {
 		{
 			try
 			{
-				String^ imagePath = "меню.png";
-				if (System::IO::File::Exists(imagePath))
+				array<String^>^ possiblePaths = {
+					"загруженное.gif",		
+				};
+
+				bool imageLoaded = false;
+				for each (String ^ path in possiblePaths)
 				{
-					pictureBox1->Image = Image::FromFile(imagePath);
-					pictureBox1->SizeMode = PictureBoxSizeMode::Zoom; 
+					if (System::IO::File::Exists(path))
+					{
+						pictureBox1->Image = Image::FromFile(path);
+
+						// Для GIF устанавливаем специальный режим
+						if (path->EndsWith(".gif", StringComparison::OrdinalIgnoreCase))
+						{
+							pictureBox1->SizeMode = PictureBoxSizeMode::Zoom; // или StretchImage
+						}
+						else
+						{
+							pictureBox1->SizeMode = PictureBoxSizeMode::StretchImage;
+						}
+
+						pictureBox1->Dock = DockStyle::Fill;
+						imageLoaded = true;
+						break;
+					}
 				}
-				else
+
+				if (!imageLoaded)
 				{
-					MessageBox::Show("Файл изображения не найден: " + imagePath,
-						"Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Warning);
+					pictureBox1->BackColor = Color::Black; 
+					MessageBox::Show("Фоновое изображение не найдено!", "Предупреждение",
+						MessageBoxButtons::OK, MessageBoxIcon::Warning);
 				}
 			}
 			catch (Exception^ ex)
 			{
+				pictureBox1->BackColor = Color::Black;
 				MessageBox::Show("Ошибка загрузки изображения: " + ex->Message,
 					"Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
 			}
