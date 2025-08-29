@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Main.h"
-
 namespace CppCLRWinFormsProject {
 
     using namespace System;
@@ -163,25 +161,23 @@ namespace CppCLRWinFormsProject {
             return bmp;
         }
         
-        // Загрузка изображений игрока
-        void LoadPlayerImages()
-        {
-            
-            idleUp = LoadBmpTransparentWhite("W.jpg");
-            idleRight = LoadBmpTransparentWhite("D.png");
-            idleDown = LoadBmpTransparentWhite("S.png");
-            idleLeft = LoadBmpTransparentWhite("A.png");
-
-            // Шаги
-            stepUpRight   = LoadBmpTransparentWhite("Шаг_правая_нога_W.png");
-            stepUpLeft    = LoadBmpTransparentWhite("Шаг_левая_нога_W.png");
-            stepRightRight= LoadBmpTransparentWhite("Шаг_правая_нога_D.png");
-            stepRightLeft = LoadBmpTransparentWhite("Шаг_левая_нога_D.png");
-            stepDownRight = LoadBmpTransparentWhite("Шаг_правая_нога_S.png");
-            stepDownLeft  = LoadBmpTransparentWhite("Шаг_левая_нога_S.png");
-            stepLeftRight = LoadBmpTransparentWhite("Шаг_правая_нога_A.png");
-            stepLeftLeft  = LoadBmpTransparentWhite("Шаг_левая_нога_A.png");
-        }
+         void LoadPlayerImages()
+         {
+             idleUp = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\W.jpg");
+             idleRight = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\D.png");
+             idleDown = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\S.png");
+             idleLeft = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\A.png");
+ 
+             // Шаги
+             stepUpRight   = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_правой_W.png");
+             stepUpLeft    = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_левой_W.png");
+             stepRightRight= LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_правой_D.png");
+             stepRightLeft = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_левой_D.png");
+             stepDownRight = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_правой_S.png");
+             stepDownLeft  = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_левой_S.png");
+             stepLeftRight = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_правой_A.png");
+             stepLeftLeft  = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_левой_A.png");
+         }
 
         void UpdatePlayerImage()
         {
@@ -276,29 +272,114 @@ namespace CppCLRWinFormsProject {
             this->KeyUp += gcnew KeyEventHandler(this, &Play_game::Form_KeyUp);
 
             playerAnimTimer = gcnew Timer();
-            playerAnimTimer->Interval = 150; 
+            playerAnimTimer->Interval = 150;
             playerAnimTimer->Tick += gcnew EventHandler(this, &Play_game::PlayerAnimTimer_Tick);
             playerAnimTimer->Start();
 
             tutorialPanel = gcnew Panel();
-            tutorialPanel->Size = System::Drawing::Size(500, 120);
-            tutorialPanel->Location = System::Drawing::Point(400, 10);
-            tutorialPanel->BackColor = Color::FromArgb(200, 0, 0, 0);
+            tutorialPanel->Size = System::Drawing::Size(600, 150);
+            tutorialPanel->Location = System::Drawing::Point((this->ClientSize.Width - tutorialPanel->Width)/2, (this->ClientSize.Height - tutorialPanel->Height)/2);
+            tutorialPanel->BackColor = Color::FromArgb(230, 20, 20, 20);
             tutorialPanel->BorderStyle = BorderStyle::FixedSingle;
+            tutorialPanel->ForeColor = Color::White;
+
+            tutorialPanel->BorderStyle = BorderStyle::FixedSingle;
+            tutorialPanel->ForeColor = Color::Gray;
+
+            tutorialPanel = gcnew Panel();
+            tutorialPanel->Size = System::Drawing::Size(600, 150);
+            tutorialPanel->Location = System::Drawing::Point(200, 250);
+            tutorialPanel->BackColor = Color::Black; 
+            tutorialPanel->BorderStyle = BorderStyle::FixedSingle;
+            tutorialPanel->ForeColor = Color::White;
+
+            tutorialPanel->BorderStyle = BorderStyle::FixedSingle;
+            tutorialPanel->ForeColor = Color::Gray;
+
             tutorialLabel = gcnew Label();
+            tutorialLabel->BackColor = Color::Black; 
             tutorialLabel->ForeColor = Color::White;
-            tutorialLabel->Font = gcnew System::Drawing::Font("Microsoft Sans Serif", 12, FontStyle::Bold);
-            tutorialLabel->Location = System::Drawing::Point(10, 10);
-            tutorialLabel->AutoSize = true;
-            tutorialNextButton = gcnew Button();
-            tutorialNextButton->Text = "Далее";
-            tutorialNextButton->Location = System::Drawing::Point(400, 75);
-            tutorialNextButton->Click += gcnew EventHandler(this, &Play_game::TutorialNext_Click);
+            tutorialLabel->Font = gcnew System::Drawing::Font("Arial", 14, FontStyle::Bold);
+            tutorialLabel->Location = System::Drawing::Point(20, 20);
+            tutorialLabel->Size = System::Drawing::Size(560, 80);
+            tutorialLabel->TextAlign = ContentAlignment::MiddleCenter;
+
             tutorialPanel->Controls->Add(tutorialLabel);
             tutorialPanel->Controls->Add(tutorialNextButton);
             this->Controls->Add(tutorialPanel);
             tutorialPanel->BringToFront();
+
+            tutorialNextButton = gcnew Button();
+            tutorialNextButton->Text = "Продолжить";
+            tutorialNextButton->Size = System::Drawing::Size(110, 30);
+            tutorialNextButton->Location = System::Drawing::Point((tutorialPanel->Width - tutorialNextButton->Width)/2, 105);
+            tutorialNextButton->BackColor = Color::FromArgb(60, 60, 60);
+            tutorialNextButton->ForeColor = Color::White;
+            tutorialNextButton->FlatStyle = FlatStyle::Flat;
+            tutorialNextButton->FlatAppearance->BorderColor = Color::Gray;
+            tutorialNextButton->FlatAppearance->BorderSize = 1;
+            tutorialNextButton->Font = gcnew System::Drawing::Font("Arial", 10, FontStyle::Bold);
+            tutorialNextButton->Cursor = Cursors::Hand;
+            tutorialNextButton->Click += gcnew EventHandler(this, &Play_game::TutorialNext_Click);
+
+            tutorialPanel->Controls->Add(tutorialLabel);
+            tutorialPanel->Controls->Add(tutorialNextButton);
+            this->Controls->Add(tutorialPanel);
+            tutorialPanel->BringToFront();
+            this->Resize += gcnew EventHandler(this, &Play_game::Play_game_Resize);
             ShowTutorialStep();
+        }
+
+        void ShowTutorialStep()
+        {
+            switch (tutorialStep)
+            {
+            case 0:
+                tutorialLabel->Text = "Добро пожаловать в Shadow Breach!\nИспользуйте клавиши WASD или стрелки для перемещения по миру";
+                break;
+            case 1:
+                tutorialLabel->Text = "В мире вас ждут опасные противники\nНажмите ПРОБЕЛ для атаки, когда приблизитесь к врагу";
+                break;
+            case 2:
+                tutorialLabel->Text = "Собирайте предметы и используйте их клавишей E\nЗелья восстановят здоровье, а оружие увеличит урон";
+                break;
+            case 3:
+                tutorialLabel->Text = "Следите за своим состоянием через меню статистики\nРюкзак поможет управлять собранными предметами";
+                break;
+            case 4:
+                tutorialLabel->Text = "Обучение завершено! Теперь вы готовы к приключениям.\nУдачи в исследовании мира Shadow Breach!";
+                tutorialNextButton->Text = "Начать игру";
+                break;
+            case 5:
+                tutorialCompleted = true;
+                tutorialPanel->Visible = false;
+                if (enemyTimer != nullptr) enemyTimer->Start();
+
+                backpackList->Items->Add("Зелье здоровья");
+                backpackList->Items->Add("Зелье здоровья");
+                backpackList->Items->Add("Ключ от старого храма");
+                break;
+            }
+        }
+
+        System::Void TutorialNext_Click(System::Object^ sender, System::EventArgs^ e)
+        {
+            if (tutorialStep < 5)
+            {
+                tutorialStep++;
+                ShowTutorialStep();
+
+                if (tutorialStep == 4)
+                {
+                    tutorialNextButton->Text = "Начать игру";
+                }
+            }
+            else
+            {
+                tutorialCompleted = true;
+                tutorialPanel->Visible = false;
+                if (enemyTimer != nullptr) enemyTimer->Start();
+            }
         }
 
         void InitializeEnemy()
@@ -665,41 +746,8 @@ namespace CppCLRWinFormsProject {
             MoveEnemyTowardsPlayer();
         }
 
-        void ShowTutorialStep()
-        {
-            switch (tutorialStep)
-            {
-            case 0:
-                tutorialLabel->Text = "Управление: WASD/стрелки для движения";
-                break;
-            case 1:
-                tutorialLabel->Text = "Пробел для атаки врага (только после обучения)";
-                break;
-            case 2:
-                tutorialLabel->Text = "Нажмите E для использования предметов";
-                break;
-            case 3:
-                tutorialLabel->Text = "Другие кнопки: статистика, рюкзак, выход";
-                break;
-            case 4:
-                tutorialLabel->Text = "Обучение завершено. Удачной игры!";
-                tutorialCompleted = true;
-                tutorialPanel->Visible = false;
-                if (enemyTimer != nullptr) enemyTimer->Start();
-                break;
-            }
-        }
 
-        System::Void TutorialNext_Click(System::Object^ sender, System::EventArgs^ e)
-        {
-            if (tutorialStep < 4)
-            {
-                tutorialStep++;
-                ShowTutorialStep();
-            }
-        }
-
-        void UpdateHealthUI()
+      void UpdateHealthUI()
         {
             labelHealthStatus->Text = "Здоровье: " + playerCharacter->Health + "%";
         }
@@ -742,6 +790,15 @@ namespace CppCLRWinFormsProject {
                     UpdateHealthUI();
                     break;
                 }
+            }
+        }
+
+        System::Void Play_game_Resize(System::Object^ sender, System::EventArgs^ e)
+        {
+            if (tutorialPanel != nullptr && tutorialPanel->Visible)
+            {
+                tutorialPanel->Location = System::Drawing::Point((this->ClientSize.Width - tutorialPanel->Width)/2, (this->ClientSize.Height - tutorialPanel->Height)/2);
+                tutorialNextButton->Location = System::Drawing::Point((tutorialPanel->Width - tutorialNextButton->Width)/2, 105);
             }
         }
     };
