@@ -82,15 +82,27 @@ namespace CppCLRWinFormsProject {
         System::Windows::Forms::PictureBox^ playerSprite;
         System::Windows::Forms::PictureBox^ enemySprite;
 
+        // Простой класс персонажа вместо абстрактного Character
         GameCharacter^ playerCharacter;
         GameCharacter^ enemyCharacter;
 
+        // Дополнительно: несколько врагов
+        System::Collections::Generic::List<GameCharacter^>^ enemies;
+        System::Collections::Generic::List<System::Windows::Forms::PictureBox^>^ enemySprites;
+        int totalEnemiesToSpawn;
+        int totalEnemiesCap;
+        int spawnedEnemiesCount;
+        int enemiesAlive;
+        System::Windows::Forms::Timer^ spawnTimer;
+
+        // UI элементы состояния/рюкзака
         System::Windows::Forms::Label^ labelHealthStatus;
         System::Windows::Forms::ListBox^ backpackList;
         System::Windows::Forms::Panel^ tutorialPanel;
         System::Windows::Forms::Label^ tutorialLabel;
         System::Windows::Forms::Button^ tutorialNextButton;
 
+        // Обучение и бой
         bool tutorialCompleted;
         int tutorialStep;
         bool hasGun;
@@ -99,17 +111,29 @@ namespace CppCLRWinFormsProject {
         System::Windows::Forms::Timer^ enemyTimer;
         System::Random^ rng;
 
+        // Направление и анимация игрока
         enum class Direction { Up, Right, Down, Left };
         Direction playerDirection;
         bool isMoving;
         bool useRightStep;
         Timer^ playerAnimTimer;
+        Timer^ playerAttackTimer;
 
+        // Кадры игрока (idle и шаги)
         Bitmap^ idleUp;    Bitmap^ idleRight; Bitmap^ idleDown;  Bitmap^ idleLeft;
         Bitmap^ stepUpRight;    Bitmap^ stepUpLeft;
         Bitmap^ stepRightRight; Bitmap^ stepRightLeft;
         Bitmap^ stepDownRight;  Bitmap^ stepDownLeft;
         Bitmap^ stepLeftRight;  Bitmap^ stepLeftLeft;
+        // Кадры атаки (с пушкой)
+        Bitmap^ attackUp; Bitmap^ attackRight; Bitmap^ attackDown; Bitmap^ attackLeft;
+
+        // Спрайты врагов и эффект взрыва
+        Bitmap^ enemyBaseImage;
+        Bitmap^ explosionImage;
+        System::Collections::Generic::List<System::Windows::Forms::PictureBox^>^ explosionSprites;
+        System::Collections::Generic::List<int>^ explosionTicks;
+        System::Windows::Forms::Timer^ explosionTimer;
 
     private:
         /// <summary>
@@ -163,20 +187,27 @@ namespace CppCLRWinFormsProject {
         
          void LoadPlayerImages()
          {
-             idleUp = LoadBmpTransparentWhite("W.jpg");
-             idleRight = LoadBmpTransparentWhite("D.png");
-             idleDown = LoadBmpTransparentWhite("S.png");
-             idleLeft = LoadBmpTransparentWhite("A.png");
+             // Стоит (idle)
+             idleUp = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\W.jpg");
+             idleRight = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\D.png");
+             idleDown = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\S.png");
+             idleLeft = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\A.png");
  
              // Шаги
-             stepUpRight   = LoadBmpTransparentWhite("игрок_шаг_правой_W.png");
-             stepUpLeft    = LoadBmpTransparentWhite("игрок_шаг_левой_W.png");
-             stepRightRight= LoadBmpTransparentWhite("игрок_шаг_правой_D.png");
-             stepRightLeft = LoadBmpTransparentWhite("игрок_шаг_левой_D.png");
-             stepDownRight = LoadBmpTransparentWhite("игрок_шаг_правой_S.png");
-             stepDownLeft  = LoadBmpTransparentWhite("игрок_шаг_левой_S.png");
-             stepLeftRight = LoadBmpTransparentWhite("игрок_шаг_правой_A.png");
-             stepLeftLeft  = LoadBmpTransparentWhite("игрок_шаг_левой_A.png");
+             stepUpRight   = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_правой_W.png");
+             stepUpLeft    = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_левой_W.png");
+             stepRightRight= LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_правой_D.png");
+             stepRightLeft = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_левой_D.png");
+             stepDownRight = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_правой_S.png");
+             stepDownLeft  = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_левой_S.png");
+             stepLeftRight = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_правой_A.png");
+             stepLeftLeft  = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_левой_A.png");
+
+             // Атака
+             attackUp = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_с_пушкой_W.png");
+             attackRight = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_с_пушкой_D.png");
+             attackDown = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_с_пушкой_S.png");
+             attackLeft = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_с_пушкой_A.png");
          }
 
         void UpdatePlayerImage()
@@ -276,6 +307,12 @@ namespace CppCLRWinFormsProject {
             playerAnimTimer->Tick += gcnew EventHandler(this, &Play_game::PlayerAnimTimer_Tick);
             playerAnimTimer->Start();
 
+            // Таймер краткой анимации атаки (возврат к обычному спрайту)
+            playerAttackTimer = gcnew Timer();
+            playerAttackTimer->Interval = 180;
+            playerAttackTimer->Tick += gcnew EventHandler(this, &Play_game::PlayerAttackTimer_Tick);
+
+            // Создание улучшенного окна обучения
             tutorialPanel = gcnew Panel();
             tutorialPanel->Size = System::Drawing::Size(600, 150);
             tutorialPanel->Location = System::Drawing::Point((this->ClientSize.Width - tutorialPanel->Width)/2, (this->ClientSize.Height - tutorialPanel->Height)/2);
@@ -283,31 +320,13 @@ namespace CppCLRWinFormsProject {
             tutorialPanel->BorderStyle = BorderStyle::FixedSingle;
             tutorialPanel->ForeColor = Color::White;
 
-            tutorialPanel->BorderStyle = BorderStyle::FixedSingle;
-            tutorialPanel->ForeColor = Color::Gray;
-
-            tutorialPanel = gcnew Panel();
-            tutorialPanel->Size = System::Drawing::Size(600, 150);
-            tutorialPanel->Location = System::Drawing::Point(200, 250);
-            tutorialPanel->BackColor = Color::Black; 
-            tutorialPanel->BorderStyle = BorderStyle::FixedSingle;
-            tutorialPanel->ForeColor = Color::White;
-
-            tutorialPanel->BorderStyle = BorderStyle::FixedSingle;
-            tutorialPanel->ForeColor = Color::Gray;
-
             tutorialLabel = gcnew Label();
-            tutorialLabel->BackColor = Color::Black; 
+            tutorialLabel->BackColor = Color::FromArgb(230, 20, 20, 20);
             tutorialLabel->ForeColor = Color::White;
             tutorialLabel->Font = gcnew System::Drawing::Font("Arial", 14, FontStyle::Bold);
             tutorialLabel->Location = System::Drawing::Point(20, 20);
             tutorialLabel->Size = System::Drawing::Size(560, 80);
             tutorialLabel->TextAlign = ContentAlignment::MiddleCenter;
-
-            tutorialPanel->Controls->Add(tutorialLabel);
-            tutorialPanel->Controls->Add(tutorialNextButton);
-            this->Controls->Add(tutorialPanel);
-            tutorialPanel->BringToFront();
 
             tutorialNextButton = gcnew Button();
             tutorialNextButton->Text = "Продолжить";
@@ -326,6 +345,10 @@ namespace CppCLRWinFormsProject {
             tutorialPanel->Controls->Add(tutorialNextButton);
             this->Controls->Add(tutorialPanel);
             tutorialPanel->BringToFront();
+            // гарантируем, что верхние кнопки доступны поверх панели
+            buttonExit->BringToFront();
+            buttonStatus->BringToFront();
+            buttonBackpack->BringToFront();
             this->Resize += gcnew EventHandler(this, &Play_game::Play_game_Resize);
             ShowTutorialStep();
         }
@@ -347,17 +370,20 @@ namespace CppCLRWinFormsProject {
                 tutorialLabel->Text = "Следите за своим состоянием через меню статистики\nРюкзак поможет управлять собранными предметами";
                 break;
             case 4:
-                tutorialLabel->Text = "Обучение завершено! Теперь вы готовы к приключениям.\nУдачи в исследовании мира Shadow Breach!";
+                tutorialLabel->Text = "Обучение завершено! Теперь вы готовы к приключениям.";
                 tutorialNextButton->Text = "Начать игру";
                 break;
             case 5:
                 tutorialCompleted = true;
                 tutorialPanel->Visible = false;
-                if (enemyTimer != nullptr) enemyTimer->Start();
-
-                backpackList->Items->Add("Зелье здоровья");
-                backpackList->Items->Add("Зелье здоровья");
-                backpackList->Items->Add("Ключ от старого храма");
+                // Спавним одного сразу, остальные по таймеру 7с
+                if (enemiesAlive < totalEnemiesToSpawn && spawnedEnemiesCount < totalEnemiesCap) SpawnOneEnemy();
+                enemyTimer->Start();
+                spawnTimer->Start();
+                // кнопки поверх
+                buttonExit->BringToFront();
+                buttonStatus->BringToFront();
+                buttonBackpack->BringToFront();
                 break;
             }
         }
@@ -368,58 +394,98 @@ namespace CppCLRWinFormsProject {
             {
                 tutorialStep++;
                 ShowTutorialStep();
-
                 if (tutorialStep == 4)
-                {
                     tutorialNextButton->Text = "Начать игру";
-                }
             }
             else
             {
                 tutorialCompleted = true;
                 tutorialPanel->Visible = false;
-                if (enemyTimer != nullptr) enemyTimer->Start();
+                if (enemiesAlive < totalEnemiesToSpawn && spawnedEnemiesCount < totalEnemiesCap) SpawnOneEnemy();
+                enemyTimer->Start();
+                spawnTimer->Start();
+                buttonExit->BringToFront();
+                buttonStatus->BringToFront();
+                buttonBackpack->BringToFront();
             }
         }
 
         void InitializeEnemy()
         {
-            enemyCharacter = gcnew GameCharacter(600, 200, 80, 3.0f, "Enemy");
+            // Коллекции врагов
+            enemies = gcnew System::Collections::Generic::List<GameCharacter^>();
+            enemySprites = gcnew System::Collections::Generic::List<System::Windows::Forms::PictureBox^>();
+            totalEnemiesToSpawn = 3; // одновременно максимум 3 на поле
+            totalEnemiesCap = 15;    // всего за игру не более 15
+            spawnedEnemiesCount = 0; 
+            enemiesAlive = 0;
 
-            enemySprite = gcnew PictureBox();
-            enemySprite->Size = System::Drawing::Size(50, 50);
-            enemySprite->Location = System::Drawing::Point(enemyCharacter->X, enemyCharacter->Y);
-            enemySprite->BackColor = Color::Transparent;
-            enemySprite->BackgroundImage = nullptr;
-            enemySprite->BackgroundImageLayout = ImageLayout::None;
+            // Таймер для движения врагов (все сразу)
+            enemyTimer = gcnew Timer();
+            enemyTimer->Interval = 60;
+            enemyTimer->Tick += gcnew EventHandler(this, &Play_game::EnemyTimer_Tick);
 
-            try
+            // Таймер спавна врагов (после обучения)
+            spawnTimer = gcnew Timer();
+            spawnTimer->Interval = 7000; // 7 секунд между спавнами
+            spawnTimer->Tick += gcnew EventHandler(this, &Play_game::SpawnTimer_Tick);
+
+            // Загрузка изображений врага и взрыва
+            String^ enemyImagePath = "враг.png";
+            if (System::IO::File::Exists(enemyImagePath))
             {
-                String^ enemyImagePath = "враг.png";
-                if (System::IO::File::Exists(enemyImagePath))
-                {
-                    Bitmap^ enemyImage = gcnew Bitmap(Image::FromFile(enemyImagePath));
-                    enemyImage->MakeTransparent(Color::White); 
-
-                    enemySprite->Image = enemyImage;
-                    enemySprite->SizeMode = PictureBoxSizeMode::StretchImage;
-                }
-                else
-                {
-                    enemySprite->BackColor = Color::Transparent;
-                    Label^ enemyLabel = gcnew Label();
-                    enemyLabel->Text = "E";
-                    enemyLabel->Font = gcnew System::Drawing::Font("Arial", 16, FontStyle::Bold);
-                    enemyLabel->ForeColor = Color::Red;
-                    enemyLabel->BackColor = Color::Transparent;
-                    enemyLabel->Dock = DockStyle::Fill;
-                    enemyLabel->TextAlign = ContentAlignment::MiddleCenter;
-                    enemySprite->Controls->Add(enemyLabel);
-                }
+                enemyBaseImage = gcnew Bitmap(Image::FromFile(enemyImagePath));
+                enemyBaseImage->MakeTransparent(Color::White);
             }
-            catch (Exception^ ex)
+            String^ explosionPath = "взрыв_при_попадании.png";
+            if (System::IO::File::Exists(explosionPath))
             {
-                enemySprite->BackColor = Color::Transparent;
+                explosionImage = gcnew Bitmap(Image::FromFile(explosionPath));
+                // Прозрачность по цвету углового пикселя (фон)
+                try { Color key = explosionImage->GetPixel(0, 0); explosionImage->MakeTransparent(key); } catch (...) { explosionImage->MakeTransparent(Color::White); }
+            }
+
+            explosionSprites = gcnew System::Collections::Generic::List<System::Windows::Forms::PictureBox^>();
+            explosionTicks = gcnew System::Collections::Generic::List<int>();
+            explosionTimer = gcnew Timer();
+            explosionTimer->Interval = 60;
+            explosionTimer->Tick += gcnew EventHandler(this, &Play_game::ExplosionTimer_Tick);
+        }
+
+        void SpawnOneEnemy()
+        {
+            if (enemiesAlive >= totalEnemiesToSpawn) return;
+            if (spawnedEnemiesCount >= totalEnemiesCap) return;
+            int ex, ey;
+            int attempts = 0;
+            // Спавним на расстоянии от игрока и подальше от других врагов
+            do {
+                ex = rng->Next(50, this->ClientSize.Width - 100);
+                ey = rng->Next(100, this->ClientSize.Height - 120);
+                attempts++;
+                bool tooCloseToPlayer = (System::Math::Abs(ex - playerCharacter->X) < 220 && System::Math::Abs(ey - playerCharacter->Y) < 220);
+                bool tooCloseToOthers = false;
+                for (int i = 0; i < enemies->Count && !tooCloseToOthers; ++i)
+                {
+                    int dx = enemies[i]->X - ex;
+                    int dy = enemies[i]->Y - ey;
+                    if (dx*dx + dy*dy < 65*65) tooCloseToOthers = true; // не перекрывать спавн
+                }
+                if (!tooCloseToPlayer && !tooCloseToOthers) break;
+            } while (attempts < 50);
+
+            GameCharacter^ e = gcnew GameCharacter(ex, ey, 60, 2.0f, "Enemy");
+            PictureBox^ sprite = gcnew PictureBox();
+            sprite->Size = System::Drawing::Size(50, 50);
+            sprite->Location = System::Drawing::Point(e->X, e->Y);
+            sprite->BackColor = Color::Transparent;
+            if (enemyBaseImage != nullptr)
+            {
+                sprite->Image = enemyBaseImage;
+                sprite->SizeMode = PictureBoxSizeMode::StretchImage;
+            }
+            else
+            {
                 Label^ enemyLabel = gcnew Label();
                 enemyLabel->Text = "E";
                 enemyLabel->Font = gcnew System::Drawing::Font("Arial", 16, FontStyle::Bold);
@@ -427,16 +493,16 @@ namespace CppCLRWinFormsProject {
                 enemyLabel->BackColor = Color::Transparent;
                 enemyLabel->Dock = DockStyle::Fill;
                 enemyLabel->TextAlign = ContentAlignment::MiddleCenter;
-                enemySprite->Controls->Add(enemyLabel);
+                sprite->Controls->Add(enemyLabel);
             }
+            sprite->Parent = pictureBox1;
+            pictureBox1->Controls->Add(sprite);
+            sprite->BringToFront();
 
-            enemySprite->Parent = pictureBox1;
-            pictureBox1->Controls->Add(enemySprite);
-            enemySprite->BringToFront();
-
-            enemyTimer = gcnew Timer();
-            enemyTimer->Interval = 100;
-            enemyTimer->Tick += gcnew EventHandler(this, &Play_game::EnemyTimer_Tick);
+            enemies->Add(e);
+            enemySprites->Add(sprite);
+            enemiesAlive++;
+            spawnedEnemiesCount++;
         }
 
        void InitializePanels()
@@ -666,6 +732,10 @@ namespace CppCLRWinFormsProject {
             HideAllPanels();
             panelStatus->Visible = true;
             panelStatus->BringToFront();
+            buttonCloseStatus->BringToFront();
+            buttonExit->BringToFront();
+            buttonStatus->BringToFront();
+            buttonBackpack->BringToFront();
         }
 
         System::Void buttonBackpack_Click(System::Object^ sender, System::EventArgs^ e)
@@ -673,6 +743,10 @@ namespace CppCLRWinFormsProject {
             HideAllPanels();
             panelBackpack->Visible = true;
             panelBackpack->BringToFront();
+            buttonCloseBackpack->BringToFront();
+            buttonExit->BringToFront();
+            buttonStatus->BringToFront();
+            buttonBackpack->BringToFront();
         }
 
         System::Void buttonCloseStatus_Click(System::Object^ sender, System::EventArgs^ e)
@@ -696,34 +770,36 @@ namespace CppCLRWinFormsProject {
                 playerDirection = Direction::Up;
                 isMoving = true;
                 MovePlayer(0, -moveSpeed);
+                UpdatePlayerImage();
                 break;
             case Keys::S:
             case Keys::Down:
                 playerDirection = Direction::Down;
                 isMoving = true;
                 MovePlayer(0, moveSpeed);
+                UpdatePlayerImage();
                 break;
             case Keys::A:
             case Keys::Left:
                 playerDirection = Direction::Left;
                 isMoving = true;
                 MovePlayer(-moveSpeed, 0);
+                UpdatePlayerImage();
                 break;
             case Keys::D:
             case Keys::Right:
                 playerDirection = Direction::Right;
                 isMoving = true;
                 MovePlayer(moveSpeed, 0);
+                UpdatePlayerImage();
                 break;
             case Keys::Space: 
-                AttackEnemy();
+                if (tutorialStep >= 1) AttackEnemy();
                 break;
             case Keys::E: 
                 UsePickupIfAny();
                 break;
             }
-
-            UpdatePlayerImage();
         }
 
         System::Void Form_KeyUp(System::Object^ sender, System::Windows::Forms::KeyEventArgs^ e)
@@ -743,7 +819,52 @@ namespace CppCLRWinFormsProject {
 
         System::Void EnemyTimer_Tick(System::Object^ sender, System::EventArgs^ e)
         {
-            MoveEnemyTowardsPlayer();
+            // Двигаем всех врагов к игроку
+                            for (int i = enemies->Count - 1; i >= 0; --i)
+                {
+                    GameCharacter^ echar = enemies[i];
+                    PictureBox^ espr = enemySprites[i];
+
+                    int deltaX = 0;
+                    int deltaY = 0;
+                    if (echar->X < playerCharacter->X) deltaX = 1; else if (echar->X > playerCharacter->X) deltaX = -1;
+                    if (echar->Y < playerCharacter->Y) deltaY = 1; else if (echar->Y > playerCharacter->Y) deltaY = -1;
+                    echar->Move(deltaX * 2, deltaY * 2);
+
+                    // простое раздвижение, чтобы не перекрывались
+                    for (int j = 0; j < enemies->Count; ++j)
+                    {
+                        if (j == i) continue;
+                        int dx = echar->X - enemies[j]->X;
+                        int dy = echar->Y - enemies[j]->Y;
+                        int d2 = dx*dx + dy*dy;
+                        if (d2 < 55*55)
+                        {
+                            if (dx == 0 && dy == 0) dx = 1;
+                            echar->Move(dx > 0 ? 1 : -1, dy > 0 ? 1 : -1);
+                        }
+                    }
+
+                    espr->Location = System::Drawing::Point(echar->X, echar->Y);
+                }
+        }
+
+        System::Void SpawnTimer_Tick(System::Object^ sender, System::EventArgs^ e)
+        {
+            if (spawnedEnemiesCount >= totalEnemiesCap)
+            {
+                spawnTimer->Stop();
+                return;
+            }
+            if (enemiesAlive < totalEnemiesToSpawn)
+            {
+                SpawnOneEnemy();
+                if (spawnedEnemiesCount >= totalEnemiesCap) spawnTimer->Stop();
+            }
+            else if (enemiesAlive >= totalEnemiesToSpawn)
+            {
+                // Ждем пока освободится место
+            }
         }
 
 
@@ -752,30 +873,91 @@ namespace CppCLRWinFormsProject {
             labelHealthStatus->Text = "Здоровье: " + playerCharacter->Health + "%";
         }
 
+        bool IsEnemyInFront(GameCharacter^ enemy)
+        {
+            int dx = enemy->X - playerCharacter->X;
+            int dy = enemy->Y - playerCharacter->Y;
+            switch (playerDirection)
+            {
+            case Direction::Up:
+                return dy < 0 && System::Math::Abs(dx) <= 120; // перед игроком вверх
+            case Direction::Down:
+                return dy > 0 && System::Math::Abs(dx) <= 120;
+            case Direction::Left:
+                return dx < 0 && System::Math::Abs(dy) <= 120;
+            case Direction::Right:
+                return dx > 0 && System::Math::Abs(dy) <= 120;
+            }
+            return true;
+        }
+
         void AttackEnemy()
         {
+            // Показать спрайт атаки в зависимости от направления
+            switch (playerDirection)
+            {
+            case Direction::Up:    if (attackUp) playerSprite->Image = attackUp; break;
+            case Direction::Right: if (attackRight) playerSprite->Image = attackRight; break;
+            case Direction::Down:  if (attackDown) playerSprite->Image = attackDown; break;
+            case Direction::Left:  if (attackLeft) playerSprite->Image = attackLeft; break;
+            }
+            playerAttackTimer->Stop();
+            playerAttackTimer->Start();
+
             if (!tutorialCompleted) return;
             int damage = baseDamage + (hasGun ? 10 : 0);
-            enemyHealth -= damage;
-            if (enemyHealth <= 0)
+
+            // Бьем ближайшего врага в большем радиусе и в направлении взгляда
+            const int maxRange = 140; // больше радиус
+            int bestIdx = -1;
+            int bestDist2 = 99999999;
+            for (int i = 0; i < enemies->Count; ++i)
             {
-                enemyHealth = 50;
-                
-                int drop = rng->Next(0, 3);
-                if (drop == 0 && !hasGun)
+                if (!IsEnemyInFront(enemies[i])) continue;
+                int dx = enemies[i]->X - playerCharacter->X;
+                int dy = enemies[i]->Y - playerCharacter->Y;
+                int d2 = dx*dx + dy*dy;
+                if (d2 < bestDist2 && d2 <= maxRange*maxRange)
                 {
-                    backpackList->Items->Add("Пистолет");
-                    hasGun = true;
-                }
-                else if (drop == 1)
-                {
-                    backpackList->Items->Add("Ключ");
-                }
-                else
-                {
-                    backpackList->Items->Add("Зелье");
+                    bestDist2 = d2;
+                    bestIdx = i;
                 }
             }
+            if (bestIdx >= 0)
+            {
+                if (enemySprites[bestIdx]->Tag == nullptr)
+                    enemySprites[bestIdx]->Tag = 60; // стартовое hp
+                int hp = safe_cast<int>(enemySprites[bestIdx]->Tag);
+                hp -= damage;
+                enemySprites[bestIdx]->Tag = hp;
+
+                // показать взрыв на враге на короткое время
+                if (explosionImage != nullptr)
+                {
+                    enemySprites[bestIdx]->Image = explosionImage;
+                    explosionSprites->Add(enemySprites[bestIdx]);
+                    explosionTicks->Add(5); // ~5*60мс
+                    explosionTimer->Start();
+                }
+
+                if (hp <= 0)
+                {
+                    pictureBox1->Controls->Remove(enemySprites[bestIdx]);
+                    enemySprites->RemoveAt(bestIdx);
+                    enemies->RemoveAt(bestIdx);
+                    enemiesAlive--;
+                    if (enemiesAlive <= 0 && tutorialCompleted)
+                    {
+                        MessageBox::Show("Победа! Все враги побеждены.", "Победа");
+                    }
+                }
+            }
+        }
+
+        System::Void PlayerAttackTimer_Tick(System::Object^ sender, System::EventArgs^ e)
+        {
+            playerAttackTimer->Stop();
+            UpdatePlayerImage();
         }
 
         void UsePickupIfAny()
@@ -800,6 +982,24 @@ namespace CppCLRWinFormsProject {
                 tutorialPanel->Location = System::Drawing::Point((this->ClientSize.Width - tutorialPanel->Width)/2, (this->ClientSize.Height - tutorialPanel->Height)/2);
                 tutorialNextButton->Location = System::Drawing::Point((tutorialPanel->Width - tutorialNextButton->Width)/2, 105);
             }
+        }
+
+        System::Void ExplosionTimer_Tick(System::Object^ sender, System::EventArgs^ e)
+        {
+            for (int i = explosionSprites->Count - 1; i >= 0; --i)
+            {
+                int t = explosionTicks[i] - 1;
+                explosionTicks[i] = t;
+                if (t <= 0)
+                {
+                    // restore enemy base image
+                    if (enemyBaseImage != nullptr)
+                        explosionSprites[i]->Image = enemyBaseImage;
+                    explosionTicks->RemoveAt(i);
+                    explosionSprites->RemoveAt(i);
+                }
+            }
+            if (explosionSprites->Count == 0) explosionTimer->Stop();
         }
     };
 } 
