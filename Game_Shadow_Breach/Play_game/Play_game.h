@@ -135,7 +135,7 @@ namespace CppCLRWinFormsProject {
         Bitmap^ attackRight;
         Bitmap^ attackDown;
         Bitmap^ attackLeft;
-
+        Bitmap^ bloodImage;
         Bitmap^ enemyBaseImage;
         Bitmap^ explosionImage;
         System::Collections::Generic::List<System::Windows
@@ -155,7 +155,7 @@ namespace CppCLRWinFormsProject {
         Bitmap^ imgCoins;
         Bitmap^ imgGun;
         Bitmap^ imgPotion;
-
+        
     private:
         /// <summary>
         /// Required designer variable.
@@ -465,6 +465,19 @@ namespace CppCLRWinFormsProject {
             spawnTimer->Interval = 7000;
             spawnTimer->Tick += gcnew EventHandler(this, &Play_game::SpawnTimer_Tick);
 
+
+            String^ bloodPath = "кровь.png";
+            if (System::IO::File::Exists(bloodPath))
+            {
+                bloodImage = gcnew Bitmap(Image::FromFile(bloodPath));
+                try {
+                    Color key = bloodImage->GetPixel(0, 0);
+                    bloodImage->MakeTransparent(key);
+                }
+                catch (...) {
+                    bloodImage->MakeTransparent(Color::White);
+                }
+            }
 
             String^ enemyImagePath = "враг.png";
             if (System::IO::File::Exists(enemyImagePath))
@@ -1175,11 +1188,19 @@ namespace CppCLRWinFormsProject {
         void ShowEnemyAttackEffect(GameCharacter^ enemy)
         {
             PictureBox^ attackEffect = gcnew PictureBox();
-            attackEffect->Size = System::Drawing::Size(30, 30);
+            attackEffect->Size = System::Drawing::Size(40, 40); // Увеличим размер для крови
             attackEffect->Location = System::Drawing::Point(enemy->X, enemy->Y);
             attackEffect->BackColor = Color::Transparent;
 
-            attackEffect->Paint += gcnew PaintEventHandler(this, &Play_game::AttackEffect_Paint);
+            if (bloodImage != nullptr)
+            {
+                attackEffect->Image = bloodImage;
+                attackEffect->SizeMode = PictureBoxSizeMode::StretchImage;
+            }
+            else
+            {
+                attackEffect->Paint += gcnew PaintEventHandler(this, &Play_game::AttackEffect_Paint);
+            }
 
             attackEffect->Parent = pictureBox1;
             pictureBox1->Controls->Add(attackEffect);
