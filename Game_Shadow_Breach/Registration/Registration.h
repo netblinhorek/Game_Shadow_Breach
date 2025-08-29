@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../Utils/CsvStorage.h"
-#include "../Main.h"
+
 
 namespace CppCLRWinFormsProject {
 
@@ -124,7 +124,7 @@ namespace CppCLRWinFormsProject {
 			// textPlayerName
 			this->textPlayerName->Location = System::Drawing::Point(250, 450);
 			this->textPlayerName->Size = System::Drawing::Size(300, 22);
-			this->textPlayerName->PlaceholderText = L"¬ведите им€ игрока";
+			
 
 			// buttonStart
 			this->buttonStart->Location = System::Drawing::Point(560, 445);
@@ -175,12 +175,9 @@ namespace CppCLRWinFormsProject {
 
 			
 			array<String^>^ row = { name, DateTime::Now.ToString("u"), "0" };
-			CsvStorage::AppendRow(row);
+			
 
 			
-			this->Hide();
-			Main^ mainForm = gcnew Main();
-			mainForm->Show();
 		}
 	};
 }

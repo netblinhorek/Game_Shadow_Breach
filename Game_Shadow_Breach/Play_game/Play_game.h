@@ -114,23 +114,39 @@ namespace CppCLRWinFormsProject {
         Timer^ playerAnimTimer;
         Timer^ playerAttackTimer;
 
-        Bitmap^ idleUp;    Bitmap^ idleRight; Bitmap^ idleDown;  Bitmap^ idleLeft;
-        Bitmap^ stepUpRight;    Bitmap^ stepUpLeft;
-        Bitmap^ stepRightRight; Bitmap^ stepRightLeft;
-        Bitmap^ stepDownRight;  Bitmap^ stepDownLeft;
-        Bitmap^ stepLeftRight;  Bitmap^ stepLeftLeft;
-        Bitmap^ attackUp; Bitmap^ attackRight; Bitmap^ attackDown; Bitmap^ attackLeft;
+        Bitmap^ idleUp;
+        Bitmap^ idleRight;
+        Bitmap^ idleDown;
+        Bitmap^ idleLeft;
+        Bitmap^ stepUpRight; 
+        Bitmap^ stepUpLeft;
+        Bitmap^ stepRightRight; 
+        Bitmap^ stepRightLeft;
+        Bitmap^ stepDownRight;
+        Bitmap^ stepDownLeft;
+        Bitmap^ stepLeftRight; 
+        Bitmap^ stepLeftLeft;
+        Bitmap^ attackUp; 
+        Bitmap^ attackRight; 
+        Bitmap^ attackDown;
+        Bitmap^ attackLeft;
 
         Bitmap^ enemyBaseImage;
         Bitmap^ explosionImage;
-        System::Collections::Generic::List<System::Windows::Forms::PictureBox^>^ explosionSprites;
+        System::Collections::Generic::List<System::Windows
+            ::Forms::PictureBox^>^ explosionSprites;
         System::Collections::Generic::List<int>^ explosionTicks;
         System::Windows::Forms::Timer^ explosionTimer;
 
-        System::Collections::Generic::List<System::Windows::Forms::PictureBox^>^ itemSprites;
+        System::Collections::Generic::List<System::Windows::Forms
+            ::PictureBox^>^ itemSprites;
         System::Collections::Generic::List<String^>^ itemTypes;
-        System::Collections::Generic::Dictionary<String^, int>^ itemCounts;
-        Bitmap^ imgKey; Bitmap^ imgCoins; Bitmap^ imgGun; Bitmap^ imgPotion;
+        System::Collections::Generic::Dictionary<String^,
+            int>^ itemCounts;
+        Bitmap^ imgKey;
+        Bitmap^ imgCoins;
+        Bitmap^ imgGun;
+        Bitmap^ imgPotion;
 
     private:
         /// <summary>
@@ -321,13 +337,17 @@ namespace CppCLRWinFormsProject {
 
             tutorialPanel = gcnew Panel();
             tutorialPanel->Size = System::Drawing::Size(600, 150);
-            tutorialPanel->Location = System::Drawing::Point((this->ClientSize.Width - tutorialPanel->Width)/2, (this->ClientSize.Height - tutorialPanel->Height)/2);
-            tutorialPanel->BackColor = Color::FromArgb(230, 20, 20, 20);
+            tutorialPanel->Location = System::Drawing::Point(200, 250);
+            tutorialPanel->BackColor = Color::Black; 
             tutorialPanel->BorderStyle = BorderStyle::FixedSingle;
-            tutorialPanel->ForeColor = Color::White;
+            tutorialPanel->ForeColor = Color::White; 
+
+            
+            tutorialPanel->BorderStyle = BorderStyle::FixedSingle;
+            tutorialPanel->ForeColor = Color::Gray;
 
             tutorialLabel = gcnew Label();
-            tutorialLabel->BackColor = Color::FromArgb(230, 20, 20, 20);
+            tutorialLabel->BackColor = Color::Black; 
             tutorialLabel->ForeColor = Color::White;
             tutorialLabel->Font = gcnew System::Drawing::Font("Arial", 14, FontStyle::Bold);
             tutorialLabel->Location = System::Drawing::Point(20, 20);
