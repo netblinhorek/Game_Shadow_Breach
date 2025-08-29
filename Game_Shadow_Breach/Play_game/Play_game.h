@@ -48,6 +48,8 @@ namespace CppCLRWinFormsProject {
             InitializePlayer();
             InitializeEnemy();
             HideAllPanels();
+
+            this->Resize += gcnew EventHandler(this, &Play_game::Play_game_Resize);
         }
 
     protected:
@@ -546,12 +548,12 @@ namespace CppCLRWinFormsProject {
 
        void InitializePanels()
         {
-            panelStatus = gcnew Panel();
-            panelStatus->Size = System::Drawing::Size(200, 150);
-            panelStatus->Location = System::Drawing::Point(750, 50);
-            panelStatus->BackColor = Color::FromArgb(180, 20, 20, 20);
-            panelStatus->BorderStyle = BorderStyle::FixedSingle;
-            panelStatus->Visible = false;
+           panelStatus = gcnew Panel();
+           panelStatus->Size = System::Drawing::Size(200, 150);
+           panelStatus->Location = System::Drawing::Point(50, 50); // Изменено расположение
+           panelStatus->BackColor = Color::FromArgb(230, 20, 20, 20); // Увеличена прозрачность
+           panelStatus->BorderStyle = BorderStyle::FixedSingle;
+           panelStatus->Visible = false;
 
             buttonCloseStatus = gcnew Button();
             buttonCloseStatus->Text = "X";
@@ -587,9 +589,9 @@ namespace CppCLRWinFormsProject {
 
            
             panelBackpack = gcnew Panel();
-            panelBackpack->Size = System::Drawing::Size(200, 150);
-            panelBackpack->Location = System::Drawing::Point(1100, 100);
-            panelBackpack->BackColor = Color::FromArgb(180, 20, 20, 20);
+            panelBackpack->Size = System::Drawing::Size(250, 200); 
+            panelBackpack->Location = System::Drawing::Point(50, 250); 
+            panelBackpack->BackColor = Color::FromArgb(230, 20, 20, 20); 
             panelBackpack->BorderStyle = BorderStyle::FixedSingle;
             panelBackpack->Visible = false;
 
@@ -610,18 +612,20 @@ namespace CppCLRWinFormsProject {
 
             backpackList = gcnew ListBox();
             backpackList->Location = System::Drawing::Point(20, 40);
-            backpackList->Size = System::Drawing::Size(160, 100);
+            backpackList->Size = System::Drawing::Size(210, 150);
             backpackList->Font = gcnew System::Drawing::Font("Microsoft Sans Serif", 9);
-            backpackList->BackColor = Color::FromArgb(30,30,30);
+            backpackList->BackColor = Color::FromArgb(40, 40, 40);
             backpackList->ForeColor = Color::White;
 
             panelBackpack->Controls->Add(buttonCloseBackpack);
             panelBackpack->Controls->Add(labelBackpack);
             panelBackpack->Controls->Add(backpackList);
 
-
             this->Controls->Add(panelStatus);
             this->Controls->Add(panelBackpack);
+
+            panelStatus->BringToFront();
+            panelBackpack->BringToFront();
         }
 
         void HideAllPanels()
@@ -772,22 +776,38 @@ namespace CppCLRWinFormsProject {
         {
             HideAllPanels();
             panelStatus->Visible = true;
+
+            UpdateHealthUI();
+
             panelStatus->BringToFront();
             buttonCloseStatus->BringToFront();
             buttonExit->BringToFront();
             buttonStatus->BringToFront();
             buttonBackpack->BringToFront();
+
+            for each (Control ^ control in panelStatus->Controls)
+            {
+                control->BringToFront();
+            }
         }
 
         System::Void buttonBackpack_Click(System::Object^ sender, System::EventArgs^ e)
         {
             HideAllPanels();
             panelBackpack->Visible = true;
+
+            UpdateBackpackUI();
+
             panelBackpack->BringToFront();
             buttonCloseBackpack->BringToFront();
             buttonExit->BringToFront();
             buttonStatus->BringToFront();
             buttonBackpack->BringToFront();
+
+            for each (Control ^ control in panelBackpack->Controls)
+            {
+                control->BringToFront();
+            }
         }
 
         System::Void buttonCloseStatus_Click(System::Object^ sender, System::EventArgs^ e)
@@ -1051,10 +1071,8 @@ namespace CppCLRWinFormsProject {
             if (bestIdx >= 0 && bestD2 <= 60*60)
             {
                 String^ t = itemTypes[bestIdx];
-                // увеличиваем счетчик
                 if (!itemCounts->ContainsKey(t)) itemCounts[t] = 0;
                 itemCounts[t] = itemCounts[t] + 1;
-                // эффект от зелья
                 if (t == "Зелье")
                 {
                     playerCharacter->Health = System::Math::Min(100,
@@ -1082,12 +1100,25 @@ namespace CppCLRWinFormsProject {
         {
             if (tutorialPanel != nullptr && tutorialPanel->Visible)
             {
-                tutorialPanel->Location = System::Drawing
-                    ::Point((this->ClientSize.Width - tutorialPanel->Width)/2,
-                        (this->ClientSize.Height - tutorialPanel->Height)/2);
-                tutorialNextButton->Location = System::Drawing
-                    ::Point((tutorialPanel->Width - tutorialNextButton->Width)/2,
-                        105);
+                tutorialPanel->Location = System::Drawing::Point(
+                    (this->ClientSize.Width - tutorialPanel->Width) / 2,
+                    (this->ClientSize.Height - tutorialPanel->Height) / 2);
+                tutorialNextButton->Location = System::Drawing::Point(
+                    (tutorialPanel->Width - tutorialNextButton->Width) / 2, 105);
+            }
+
+            buttonExit->Location = System::Drawing::Point(5, 5);
+            buttonStatus->Location = System::Drawing::Point(this->ClientSize.Width - 155, 5);
+            buttonBackpack->Location = System::Drawing::Point(this->ClientSize.Width - 155,
+                this->ClientSize.Height - 80);
+
+            if (panelStatus != nullptr)
+            {
+                panelStatus->Location = System::Drawing::Point(50, 50);
+            }
+            if (panelBackpack != nullptr)
+            {
+                panelBackpack->Location = System::Drawing::Point(50, 250);
             }
         }
 
