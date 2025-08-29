@@ -163,20 +163,20 @@ namespace CppCLRWinFormsProject {
         
          void LoadPlayerImages()
          {
-             idleUp = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\W.jpg");
-             idleRight = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\D.png");
-             idleDown = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\S.png");
-             idleLeft = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\A.png");
+             idleUp = LoadBmpTransparentWhite("W.jpg");
+             idleRight = LoadBmpTransparentWhite("D.png");
+             idleDown = LoadBmpTransparentWhite("S.png");
+             idleLeft = LoadBmpTransparentWhite("A.png");
  
              // Шаги
-             stepUpRight   = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_правой_W.png");
-             stepUpLeft    = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_левой_W.png");
-             stepRightRight= LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_правой_D.png");
-             stepRightLeft = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_левой_D.png");
-             stepDownRight = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_правой_S.png");
-             stepDownLeft  = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_левой_S.png");
-             stepLeftRight = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_правой_A.png");
-             stepLeftLeft  = LoadBmpTransparentWhite("C:\\Game_Shadow_Breach\\Game_Shadow_Breach\\Main\\игрок_шаг_левой_A.png");
+             stepUpRight   = LoadBmpTransparentWhite("игрок_шаг_правой_W.png");
+             stepUpLeft    = LoadBmpTransparentWhite("игрок_шаг_левой_W.png");
+             stepRightRight= LoadBmpTransparentWhite("игрок_шаг_правой_D.png");
+             stepRightLeft = LoadBmpTransparentWhite("игрок_шаг_левой_D.png");
+             stepDownRight = LoadBmpTransparentWhite("игрок_шаг_правой_S.png");
+             stepDownLeft  = LoadBmpTransparentWhite("игрок_шаг_левой_S.png");
+             stepLeftRight = LoadBmpTransparentWhite("игрок_шаг_правой_A.png");
+             stepLeftLeft  = LoadBmpTransparentWhite("игрок_шаг_левой_A.png");
          }
 
         void UpdatePlayerImage()
