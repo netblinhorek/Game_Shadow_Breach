@@ -1,4 +1,4 @@
-Номер;Имя;Почта;Пароль
-1;Noname;gggg@gmail.com;ggggg
-2;hghh;nhhh;hhhh
-3;dfghj;dfghj;fghjk
+Номер;Имя;Почта;Пароль;Монеты;Зелье;Ключи;Урон
+1;Noname;gggg@gmail.com;ggggg;;;;
+2;hghh;nhhh;hhhh;;;;
+3;dfghj;dfghj;fghjk;;;;
