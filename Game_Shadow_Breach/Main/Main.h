@@ -19,7 +19,7 @@ namespace CppCLRWinFormsProject {
 		Main(void)
 		{
 			InitializeComponent();
-			LoadBackgroundImage(); 
+			LoadBackgroundImage();
 			baseClientSize = this->ClientSize;
 			origBtn1 = this->button1->Bounds;
 			origBtn2 = this->button2->Bounds;
@@ -27,9 +27,14 @@ namespace CppCLRWinFormsProject {
 			origBtn4 = this->button4->Bounds;
 			origBtnLogin = this->buttonLogin->Bounds;
 			origLabel = this->labelTitle->Bounds;
+			origLabelUserInfo = this->labelUserInfo->Bounds;
 			baseFontBtn = this->button1->Font;
 			baseFontLabel = this->labelTitle->Font;
 			this->Resize += gcnew EventHandler(this, &Main::Main_Resize);
+			currentUserName = nullptr;
+			currentUserCoins = 0;
+			LoadUserData();
+			UpdateUserInfoDisplay();
 		}
 
 	protected:
@@ -49,6 +54,7 @@ namespace CppCLRWinFormsProject {
 		System::Windows::Forms::Button^ buttonLogin;
 		System::Windows::Forms::PictureBox^ pictureBox1;
 		System::Windows::Forms::Label^ labelTitle;
+		System::Windows::Forms::Label^ labelUserInfo;
 
 		System::Drawing::Size baseClientSize;
 		System::Drawing::Rectangle origBtn1;
@@ -57,19 +63,23 @@ namespace CppCLRWinFormsProject {
 		System::Drawing::Rectangle origBtn4;
 		System::Drawing::Rectangle origBtnLogin;
 		System::Drawing::Rectangle origLabel;
+		System::Drawing::Rectangle origLabelUserInfo;
 		System::Drawing::Font^ baseFontBtn;
 		System::Drawing::Font^ baseFontLabel;
+
+		String^ currentUserName;
+		int currentUserCoins;
 
 	private:
 		System::ComponentModel::Container^ components;
 
-		
+
 		void LoadBackgroundImage()
 		{
 			try
 			{
 				array<String^>^ possiblePaths = {
-					"загруженное.gif",		
+					"загруженное.gif",
 				};
 
 				bool imageLoaded = false;
@@ -81,7 +91,7 @@ namespace CppCLRWinFormsProject {
 
 						if (path->EndsWith(".gif", StringComparison::OrdinalIgnoreCase))
 						{
-							pictureBox1->SizeMode = PictureBoxSizeMode::Zoom; 
+							pictureBox1->SizeMode = PictureBoxSizeMode::Zoom;
 						}
 						else
 						{
@@ -96,7 +106,7 @@ namespace CppCLRWinFormsProject {
 
 				if (!imageLoaded)
 				{
-					pictureBox1->BackColor = Color::Black; 
+					pictureBox1->BackColor = Color::Black;
 					MessageBox::Show("Фоновое изображение не найдено!", "Предупреждение",
 						MessageBoxButtons::OK, MessageBoxIcon::Warning);
 				}
@@ -113,14 +123,27 @@ namespace CppCLRWinFormsProject {
 		void InitializeComponent(void)
 		{
 			this->button1 = (gcnew System::Windows::Forms::Button());
-			this->button2 = (gcnew System::Windows::Forms::Button()); 
+			this->button2 = (gcnew System::Windows::Forms::Button());
 			this->button3 = (gcnew System::Windows::Forms::Button());
 			this->button4 = (gcnew System::Windows::Forms::Button());
-			this->buttonLogin = (gcnew System::Windows::Forms::Button()); 
-			this->labelTitle = (gcnew System::Windows::Forms::Label());   
+			this->buttonLogin = (gcnew System::Windows::Forms::Button());
+			this->labelUserInfo = (gcnew System::Windows::Forms::Label());
+			this->labelTitle = (gcnew System::Windows::Forms::Label());
 			this->pictureBox1 = (gcnew System::Windows::Forms::PictureBox());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->BeginInit();
 			this->SuspendLayout();
+
+			//
+			// labelUserInfo
+			//
+			this->labelUserInfo->AutoSize = true;
+			this->labelUserInfo->Font = gcnew System::Drawing::Font("Arial", 12, FontStyle::Bold);
+			this->labelUserInfo->ForeColor = Color::White;
+			this->labelUserInfo->BackColor = Color::Black;
+			this->labelUserInfo->Location = Point(1000, 55);
+			this->labelUserInfo->Size = Drawing::Size(300, 50);
+			this->labelUserInfo->Text = "Гость"; 
+			   
 
 			// 
 			// button1
@@ -142,11 +165,10 @@ namespace CppCLRWinFormsProject {
 			this->button1->Cursor = System::Windows::Forms::Cursors::Hand;
 			this->button1->Click += gcnew System::EventHandler(this, &Main::button1_Click_1);
 
-
 			// 
 			// button2  
 			// 
-			this->button2->Location = System::Drawing::Point(85, 415); 
+			this->button2->Location = System::Drawing::Point(85, 415);
 			this->button2->Name = L"button2";
 			this->button2->Size = System::Drawing::Size(220, 70);
 			this->button2->TabIndex = 2;
@@ -207,7 +229,7 @@ namespace CppCLRWinFormsProject {
 			// 
 			// pictureBox1
 			// 
-			this->pictureBox1->Dock = System::Windows::Forms::DockStyle::Fill; 
+			this->pictureBox1->Dock = System::Windows::Forms::DockStyle::Fill;
 			this->pictureBox1->Location = System::Drawing::Point(0, 0);
 			this->pictureBox1->Name = L"pictureBox1";
 			this->pictureBox1->Size = System::Drawing::Size(1359, 793);
@@ -219,12 +241,23 @@ namespace CppCLRWinFormsProject {
 			// 
 			this->labelTitle->AutoSize = true;
 			this->labelTitle->Font = gcnew System::Drawing::Font("Arial", 30, FontStyle::Bold);
-			this->labelTitle->ForeColor = Color::Gainsboro; // светло-серый
-			this->labelTitle->BackColor = Color::Black; // прозрачный фон
+			this->labelTitle->ForeColor = Color::Gainsboro;
+			this->labelTitle->BackColor = Color::Black;
 			this->labelTitle->Text = "Shadow\nBreach";
 			this->labelTitle->TextAlign = ContentAlignment::MiddleCenter;
 			this->labelTitle->Location = Point(85, 55);
 			this->labelTitle->Size = Drawing::Size(400, 150);
+
+			// 
+			// labelUserInfo
+			// 
+			this->labelUserInfo->AutoSize = true;
+			this->labelUserInfo->Font = gcnew System::Drawing::Font("Arial", 12, FontStyle::Bold);
+			this->labelUserInfo->ForeColor = Color::White;
+			this->labelUserInfo->BackColor = Color::Black;
+			this->labelUserInfo->Location = Point(1100, 60);
+			this->labelUserInfo->Size = Drawing::Size(300, 50);
+			this->labelUserInfo->Text = "Загрузка...";
 
 			// 
 			// buttonLogin 
@@ -246,13 +279,13 @@ namespace CppCLRWinFormsProject {
 			this->buttonLogin->Cursor = System::Windows::Forms::Cursors::Hand;
 			this->buttonLogin->Click += gcnew System::EventHandler(this, &Main::buttonLogin_Click);
 
-
 			// 
 			// Main
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(12, 25);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(1359, 793);
+			this->Controls->Add(this->labelUserInfo);
 			this->Controls->Add(this->labelTitle);
 			this->Controls->Add(this->buttonLogin);
 			this->Controls->Add(this->button1);
@@ -269,23 +302,93 @@ namespace CppCLRWinFormsProject {
 #pragma endregion
 
 	private:
+		void LoadUserData()
+		{
+			try
+			{
+				String^ csvPath = "visits.csv";
+				if (System::IO::File::Exists(csvPath))
+				{
+					array<String^>^ lines = System::IO::File::ReadAllLines(csvPath);
 
+					bool hasUserData = false;
+
+					for (int i = lines->Length - 1; i >= 0; i--)
+					{
+						if (lines[i]->Trim()->Length > 0 && !lines[i]->StartsWith("Номер"))
+						{
+							array<String^>^ parts = lines[i]->Split(';');
+							if (parts->Length >= 8) 
+							{
+								currentUserName = parts[1]; 
+
+								
+								int coins;
+								if (Int32::TryParse(parts[4], coins))
+									currentUserCoins = coins;
+								else
+									currentUserCoins = 0;
+
+								hasUserData = true;
+								break;
+							}
+						}
+					}
+
+					
+					if (!hasUserData)
+					{
+						currentUserName = nullptr;
+						currentUserCoins = 0;
+					}
+				}
+				else
+				{
+					currentUserName = nullptr;
+					currentUserCoins = 0;
+				}
+			}
+			catch (Exception^ ex)
+			{
+				currentUserName = nullptr;
+				currentUserCoins = 0;
+			}
+		}
+
+		void UpdateUserInfoDisplay()
+		{
+			if (!String::IsNullOrEmpty(currentUserName))
+			{
+				labelUserInfo->Text = String::Format("Игрок: {0}\n"
+					"Монеты: {1}",
+					currentUserName, currentUserCoins);
+				labelUserInfo->Visible = true; 
+			}
+			else
+			{
+				labelUserInfo->Text = "Гость";
+			}
+		}
 
 		System::Void buttonLogin_Click(System::Object^ sender, System::EventArgs^ e)
 		{
 			try
 			{
 				CppCLRWinFormsProject::Registration^ reg = gcnew CppCLRWinFormsProject::Registration();
-
 				System::Windows::Forms::DialogResult result = reg->ShowDialog();
 
 				if (result == System::Windows::Forms::DialogResult::OK)
 				{
+					LoadUserData();
+					UpdateUserInfoDisplay();
+
 					MessageBox::Show("Регистрация прошла успешно!", "Успех",
 						MessageBoxButtons::OK, MessageBoxIcon::Information);
 				}
 				else if (result == System::Windows::Forms::DialogResult::Cancel)
 				{
+					LoadUserData();
+					UpdateUserInfoDisplay();
 				}
 			}
 			catch (Exception^ ex)
@@ -294,11 +397,40 @@ namespace CppCLRWinFormsProject {
 					MessageBoxButtons::OK, MessageBoxIcon::Error);
 			}
 		}
+
+
+		String^ GetPlayerNameFromCSV()
+		{
+			try
+			{
+				String^ csvPath = "visits.csv";
+				if (File::Exists(csvPath))
+				{
+					array<String^>^ lines = File::ReadAllLines(csvPath);
+					if (lines->Length > 1) 
+					{
+						array<String^>^ parts = lines[1]->Split(';');
+						if (parts->Length >= 2)
+						{
+							return parts[1]->Trim(); 
+						}
+					}
+				}
+			}
+			catch (Exception^ ex)
+			{
+				MessageBox::Show("Ошибка чтения файла: " + ex->Message);
+			}
+			return "Player"; 
+		}
+
+		// Затем создаем игру:
 		System::Void button1_Click_1(System::Object^ sender, System::EventArgs^ e)
 		{
 			try
 			{
-				CppCLRWinFormsProject::Play_game^ play_game = gcnew CppCLRWinFormsProject::Play_game();
+				String^ playerName = GetPlayerNameFromCSV();
+				CppCLRWinFormsProject::Play_game^ play_game = gcnew CppCLRWinFormsProject::Play_game(playerName);
 				this->Hide();
 				play_game->ShowDialog();
 				this->Close();
@@ -315,7 +447,7 @@ namespace CppCLRWinFormsProject {
 			try
 			{
 				CppCLRWinFormsProject::Settings^ settings = gcnew CppCLRWinFormsProject::Settings();
-				settings->ShowDialog(); 
+				settings->ShowDialog();
 			}
 			catch (Exception^ ex)
 			{
@@ -339,6 +471,7 @@ namespace CppCLRWinFormsProject {
 					"Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
 			}
 		}
+
 		System::Void button4_Click_1(System::Object^ sender, System::EventArgs^ e)
 		{
 			System::Windows::Forms::DialogResult result = MessageBox::Show(
@@ -366,6 +499,7 @@ namespace CppCLRWinFormsProject {
 			this->button4->Bounds = ScaleRect(origBtn4, sx, sy);
 			this->buttonLogin->Bounds = ScaleRect(origBtnLogin, sx, sy);
 			this->labelTitle->Bounds = ScaleRect(origLabel, sx, sy);
+			this->labelUserInfo->Bounds = ScaleRect(origLabelUserInfo, sx, sy);
 
 			float fscale = (float)System::Math::Min(sx, sy);
 			this->button1->Font = gcnew System::Drawing::Font(baseFontBtn->FontFamily, baseFontBtn->Size * fscale, baseFontBtn->Style);
@@ -374,6 +508,7 @@ namespace CppCLRWinFormsProject {
 			this->button4->Font = gcnew System::Drawing::Font(baseFontBtn->FontFamily, baseFontBtn->Size * fscale, baseFontBtn->Style);
 			this->buttonLogin->Font = gcnew System::Drawing::Font(baseFontBtn->FontFamily, baseFontBtn->Size * fscale, baseFontBtn->Style);
 			this->labelTitle->Font = gcnew System::Drawing::Font(baseFontLabel->FontFamily, baseFontLabel->Size * fscale, baseFontLabel->Style);
+			this->labelUserInfo->Font = gcnew System::Drawing::Font(baseFontBtn->FontFamily, baseFontBtn->Size * fscale * 0.8f, baseFontBtn->Style);
 		}
 
 		System::Drawing::Rectangle ScaleRect(System::Drawing::Rectangle r, double sx, double sy)

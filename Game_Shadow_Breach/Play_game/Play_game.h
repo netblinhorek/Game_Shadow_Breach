@@ -8,6 +8,7 @@ namespace CppCLRWinFormsProject {
     using namespace System::Windows::Forms;
     using namespace System::Data;
     using namespace System::Drawing;
+    using namespace System::IO;
 
     public ref class GameCharacter
     {
@@ -40,16 +41,19 @@ namespace CppCLRWinFormsProject {
     public ref class Play_game : public System::Windows::Forms::Form
     {
     public:
-        Play_game(void)
+        Play_game(String^ playerName)
         {
+            currentPlayerName = playerName;
             InitializeComponent();
             InitializePanels();
             LoadBackgroundImage();
             InitializePlayer();
             InitializeEnemy();
             HideAllPanels();
+            LoadPlayerData();
 
             this->Resize += gcnew EventHandler(this, &Play_game::Play_game_Resize);
+            this->FormClosing += gcnew FormClosingEventHandler(this, &Play_game::Play_game_FormClosing);
         }
 
     protected:
@@ -73,6 +77,12 @@ namespace CppCLRWinFormsProject {
         }
 
     private:
+        String^ currentPlayerName;
+        int currentCoins;
+        int currentPotions;
+        int currentKeys;
+        int currentDamage;
+
         System::Windows::Forms::Button^ buttonExit;
         System::Windows::Forms::Button^ buttonStatus;
         System::Windows::Forms::Button^ buttonBackpack;
@@ -155,12 +165,115 @@ namespace CppCLRWinFormsProject {
         Bitmap^ imgCoins;
         Bitmap^ imgGun;
         Bitmap^ imgPotion;
-        
+
     private:
         /// <summary>
         /// Required designer variable.
         /// </summary>
         System::ComponentModel::Container^ components;
+
+        void LoadPlayerData()
+        {
+            try
+            {
+                String^ csvPath = "visits.csv";
+                if (File::Exists(csvPath))
+                {
+                    array<String^>^ lines = File::ReadAllLines(csvPath);
+
+                    for (int i = 1; i < lines->Length; i++) 
+                    {
+                        if (lines[i]->Trim()->Length > 0)
+                        {
+                            array<String^>^ parts = lines[i]->Split(';');
+                            if (parts->Length >= 8) 
+                            {
+                                String^ storedName = parts[1]->Trim();
+
+                                if (String::Equals(storedName, currentPlayerName, StringComparison::OrdinalIgnoreCase))
+                                {
+                                    
+                                    currentCoins = Int32::Parse(parts[4]->Trim());
+                                    currentPotions = Int32::Parse(parts[5]->Trim());
+                                    currentKeys = Int32::Parse(parts[6]->Trim());
+                                    currentDamage = Int32::Parse(parts[7]->Trim());
+
+                                    
+                                    itemCounts["Монеты"] = currentCoins;
+                                    itemCounts["Зелье"] = currentPotions;
+                                    itemCounts["Ключ"] = currentKeys;
+
+                                    
+                                    baseDamage = currentDamage;
+
+                                    
+                                    hasGun = (currentDamage > 10);
+
+                                    UpdateBackpackUI();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception^ ex)
+            {
+                MessageBox::Show("Ошибка загрузки данных игрока: " + ex->Message,
+                    "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+            }
+        }
+
+        void SavePlayerData()
+        {
+            try
+            {
+                String^ csvPath = "visits.csv";
+                if (File::Exists(csvPath))
+                {
+                    array<String^>^ lines = File::ReadAllLines(csvPath);
+                    bool playerFound = false;
+
+                    for (int i = 1; i < lines->Length; i++)
+                    {
+                        if (lines[i]->Trim()->Length > 0)
+                        {
+                            array<String^>^ parts = lines[i]->Split(';');
+                            if (parts->Length >= 8)
+                            {
+                                String^ storedName = parts[1]->Trim();
+
+                                if (String::Equals(storedName, currentPlayerName, StringComparison::OrdinalIgnoreCase))
+                                {
+                                    lines[i] = String::Format("{0};{1};{2};{3};{4};{5};{6};{7}",
+                                        parts[0]->Trim(),
+                                        currentPlayerName,
+                                        parts[2]->Trim(), 
+                                        parts[3]->Trim(), 
+                                        currentCoins,     
+                                        currentPotions,   
+                                        currentKeys,      
+                                        baseDamage       
+                                    );
+                                    playerFound = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (playerFound)
+                    {
+                        File::WriteAllLines(csvPath, lines);
+                    }
+                }
+            }
+            catch (Exception^ ex)
+            {
+                MessageBox::Show("Ошибка сохранения данных: " + ex->Message,
+                    "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+            }
+        }
 
         void LoadBackgroundImage()
         {
@@ -291,7 +404,7 @@ namespace CppCLRWinFormsProject {
                 isMoving = false;
                 useRightStep = true;
                 hasGun = false;
-                baseDamage = 10;
+                baseDamage = currentDamage > 0 ? currentDamage : 10;
                 enemyHealth = 50;
                 tutorialCompleted = false;
                 tutorialStep = 0;
@@ -349,10 +462,6 @@ namespace CppCLRWinFormsProject {
             tutorialPanel->BackColor = Color::Black;
             tutorialPanel->BorderStyle = BorderStyle::FixedSingle;
             tutorialPanel->ForeColor = Color::White;
-
-
-            tutorialPanel->BorderStyle = BorderStyle::FixedSingle;
-            tutorialPanel->ForeColor = Color::Gray;
 
             tutorialLabel = gcnew Label();
             tutorialLabel->BackColor = Color::Black;
@@ -465,7 +574,6 @@ namespace CppCLRWinFormsProject {
             spawnTimer->Interval = 7000;
             spawnTimer->Tick += gcnew EventHandler(this, &Play_game::SpawnTimer_Tick);
 
-
             String^ bloodPath = "кровь.png";
             if (System::IO::File::Exists(bloodPath))
             {
@@ -488,8 +596,7 @@ namespace CppCLRWinFormsProject {
             String^ explosionPath = "взрыв_при_попадании.png";
             if (System::IO::File::Exists(explosionPath))
             {
-                explosionImage = gcnew Bitmap(Image::FromFile(explosionPath)
-                );
+                explosionImage = gcnew Bitmap(Image::FromFile(explosionPath));
                 try {
                     Color key = explosionImage->GetPixel(0, 0);
                     explosionImage->MakeTransparent(key);
@@ -512,6 +619,11 @@ namespace CppCLRWinFormsProject {
                 ::List<System::Windows::Forms::PictureBox^>();
             itemTypes = gcnew System::Collections::Generic::List<String^>();
             itemCounts = gcnew System::Collections::Generic::Dictionary<String^, int>();
+
+            itemCounts["Монеты"] = currentCoins;
+            itemCounts["Зелье"] = currentPotions;
+            itemCounts["Ключ"] = currentKeys;
+
             imgKey = LoadImageTransparentFromCorner("ключ.png");
             imgCoins = LoadImageTransparentFromCorner("монеты.png");
             imgGun = LoadImageTransparentFromCorner("пистолет.png");
@@ -521,11 +633,10 @@ namespace CppCLRWinFormsProject {
             attackCooldown = 0;
 
             enemyAttackTimer = gcnew Timer();
-            enemyAttackTimer->Interval = 1000; 
+            enemyAttackTimer->Interval = 1000;
             enemyAttackTimer->Tick += gcnew EventHandler(this, &Play_game::EnemyAttackTimer_Tick);
 
             attackEffectSprites = gcnew System::Collections::Generic::List<System::Windows::Forms::PictureBox^>();
-
         }
 
         void SpawnOneEnemy()
@@ -621,7 +732,6 @@ namespace CppCLRWinFormsProject {
             panelStatus->Controls->Add(labelHealthStatus);
             panelStatus->Controls->Add(labelMana);
 
-
             panelBackpack = gcnew Panel();
             panelBackpack->Size = System::Drawing::Size(250, 200);
             panelBackpack->Location = System::Drawing::Point(50, 250);
@@ -683,7 +793,7 @@ namespace CppCLRWinFormsProject {
             int dx = enemy->X - playerCharacter->X;
             int dy = enemy->Y - playerCharacter->Y;
             int distanceSquared = dx * dx + dy * dy;
-            int collisionDistance = 40; 
+            int collisionDistance = 40;
 
             return distanceSquared <= collisionDistance * collisionDistance;
         }
@@ -788,8 +898,14 @@ namespace CppCLRWinFormsProject {
                 MessageBoxButtons::YesNo, MessageBoxIcon::Question) == System
                 ::Windows::Forms::DialogResult::Yes)
             {
+                SavePlayerData();
                 this->Close();
             }
+        }
+
+        System::Void Play_game_FormClosing(System::Object^ sender, FormClosingEventArgs^ e)
+        {
+            SavePlayerData();
         }
 
         System::Void buttonStatus_Click(System::Object^ sender, System::EventArgs^ e)
@@ -877,7 +993,7 @@ namespace CppCLRWinFormsProject {
             case Keys::Space:
                 if (tutorialStep >= 1) AttackEnemy();
                 break;
-            case Keys::E: 
+            case Keys::E:
                 UsePickupIfAny();
                 break;
             }
@@ -900,32 +1016,32 @@ namespace CppCLRWinFormsProject {
 
         System::Void EnemyTimer_Tick(System::Object^ sender, System::EventArgs^ e)
         {
-                            for (int i = enemies->Count - 1; i >= 0; --i)
+            for (int i = enemies->Count - 1; i >= 0; --i)
+            {
+                GameCharacter^ echar = enemies[i];
+                PictureBox^ espr = enemySprites[i];
+
+                int deltaX = 0;
+                int deltaY = 0;
+                if (echar->X < playerCharacter->X) deltaX = 1; else if (echar->X > playerCharacter->X) deltaX = -1;
+                if (echar->Y < playerCharacter->Y) deltaY = 1; else if (echar->Y > playerCharacter->Y) deltaY = -1;
+                echar->Move(deltaX * 2, deltaY * 2);
+
+                for (int j = 0; j < enemies->Count; ++j)
                 {
-                    GameCharacter^ echar = enemies[i];
-                    PictureBox^ espr = enemySprites[i];
-
-                    int deltaX = 0;
-                    int deltaY = 0;
-                    if (echar->X < playerCharacter->X) deltaX = 1; else if (echar->X > playerCharacter->X) deltaX = -1;
-                    if (echar->Y < playerCharacter->Y) deltaY = 1; else if (echar->Y > playerCharacter->Y) deltaY = -1;
-                    echar->Move(deltaX * 2, deltaY * 2);
-
-                    for (int j = 0; j < enemies->Count; ++j)
+                    if (j == i) continue;
+                    int dx = echar->X - enemies[j]->X;
+                    int dy = echar->Y - enemies[j]->Y;
+                    int d2 = dx * dx + dy * dy;
+                    if (d2 < 55 * 55)
                     {
-                        if (j == i) continue;
-                        int dx = echar->X - enemies[j]->X;
-                        int dy = echar->Y - enemies[j]->Y;
-                        int d2 = dx*dx + dy*dy;
-                        if (d2 < 55*55)
-                        {
-                            if (dx == 0 && dy == 0) dx = 1;
-                            echar->Move(dx > 0 ? 1 : -1, dy > 0 ? 1 : -1);
-                        }
+                        if (dx == 0 && dy == 0) dx = 1;
+                        echar->Move(dx > 0 ? 1 : -1, dy > 0 ? 1 : -1);
                     }
-
-                    espr->Location = System::Drawing::Point(echar->X, echar->Y);
                 }
+
+                espr->Location = System::Drawing::Point(echar->X, echar->Y);
+            }
         }
 
         System::Void SpawnTimer_Tick(System::Object^ sender, System::EventArgs^ e)
@@ -945,8 +1061,7 @@ namespace CppCLRWinFormsProject {
             }
         }
 
-
-      void UpdateHealthUI()
+        void UpdateHealthUI()
         {
             labelHealthStatus->Text = "Здоровье: "
                 + playerCharacter->Health + "%";
@@ -959,7 +1074,7 @@ namespace CppCLRWinFormsProject {
             switch (playerDirection)
             {
             case Direction::Up:
-                return dy < 0 && System::Math::Abs(dx) <= 120; 
+                return dy < 0 && System::Math::Abs(dx) <= 120;
             case Direction::Down:
                 return dy > 0 && System::Math::Abs(dx) <= 120;
             case Direction::Left:
@@ -974,13 +1089,13 @@ namespace CppCLRWinFormsProject {
         {
             switch (playerDirection)
             {
-            case Direction::Up:   
+            case Direction::Up:
                 if (attackUp) playerSprite->Image = attackUp; break;
             case Direction::Right:
                 if (attackRight) playerSprite->Image = attackRight; break;
-            case Direction::Down: 
+            case Direction::Down:
                 if (attackDown) playerSprite->Image = attackDown; break;
-            case Direction::Left: 
+            case Direction::Left:
                 if (attackLeft) playerSprite->Image = attackLeft; break;
             }
             playerAttackTimer->Stop();
@@ -989,7 +1104,7 @@ namespace CppCLRWinFormsProject {
             if (!tutorialCompleted) return;
             int damage = baseDamage + (hasGun ? 10 : 0);
 
-            const int maxRange = 140; 
+            const int maxRange = 140;
             int bestIdx = -1;
             int bestDist2 = 99999999;
             for (int i = 0; i < enemies->Count; ++i)
@@ -997,8 +1112,8 @@ namespace CppCLRWinFormsProject {
                 if (!IsEnemyInFront(enemies[i])) continue;
                 int dx = enemies[i]->X - playerCharacter->X;
                 int dy = enemies[i]->Y - playerCharacter->Y;
-                int d2 = dx*dx + dy*dy;
-                if (d2 < bestDist2 && d2 <= maxRange*maxRange)
+                int d2 = dx * dx + dy * dy;
+                if (d2 < bestDist2 && d2 <= maxRange * maxRange)
                 {
                     bestDist2 = d2;
                     bestIdx = i;
@@ -1016,7 +1131,7 @@ namespace CppCLRWinFormsProject {
                 {
                     enemySprites[bestIdx]->Image = explosionImage;
                     explosionSprites->Add(enemySprites[bestIdx]);
-                    explosionTicks->Add(5); 
+                    explosionTicks->Add(5);
                     explosionTimer->Start();
                 }
 
@@ -1082,27 +1197,39 @@ namespace CppCLRWinFormsProject {
             {
                 int dx = itemSprites[i]->Left - playerCharacter->X;
                 int dy = itemSprites[i]->Top - playerCharacter->Y;
-                int d2 = dx*dx + dy*dy;
+                int d2 = dx * dx + dy * dy;
                 if (d2 < bestD2)
                 {
                     bestD2 = d2; bestIdx = i;
                 }
             }
-            if (bestIdx >= 0 && bestD2 <= 60*60)
+            if (bestIdx >= 0 && bestD2 <= 60 * 60)
             {
                 String^ t = itemTypes[bestIdx];
                 if (!itemCounts->ContainsKey(t)) itemCounts[t] = 0;
                 itemCounts[t] = itemCounts[t] + 1;
+
                 if (t == "Зелье")
                 {
+                    currentPotions = itemCounts[t];
                     playerCharacter->Health = System::Math::Min(100,
                         playerCharacter->Health + 30);
                     UpdateHealthUI();
                 }
-                if (t == "Пистолет")
+                else if (t == "Монеты")
+                {
+                    currentCoins = itemCounts[t];
+                }
+                else if (t == "Ключ")
+                {
+                    currentKeys = itemCounts[t];
+                }
+                else if (t == "Пистолет")
                 {
                     hasGun = true;
+                    baseDamage = 20; 
                 }
+
                 pictureBox1->Controls->Remove(itemSprites[bestIdx]);
                 itemSprites->RemoveAt(bestIdx);
                 itemTypes->RemoveAt(bestIdx);
@@ -1113,6 +1240,8 @@ namespace CppCLRWinFormsProject {
                 buttonExit->BringToFront();
                 buttonStatus->BringToFront();
                 buttonBackpack->BringToFront();
+
+                SavePlayerData();
             }
         }
 
@@ -1141,6 +1270,7 @@ namespace CppCLRWinFormsProject {
                 panelBackpack->Location = System::Drawing::Point(50, 250);
             }
         }
+
         System::Void EnemyAttackTimer_Tick(System::Object^ sender, System::EventArgs^ e)
         {
             if (!tutorialCompleted) return;
@@ -1152,7 +1282,7 @@ namespace CppCLRWinFormsProject {
                 int dx = enemy->X - playerCharacter->X;
                 int dy = enemy->Y - playerCharacter->Y;
                 int distanceSquared = dx * dx + dy * dy;
-                int attackRange = 60; 
+                int attackRange = 60;
 
                 if (distanceSquared <= attackRange * attackRange)
                 {
@@ -1178,6 +1308,8 @@ namespace CppCLRWinFormsProject {
             enemyAttackTimer->Stop();
             playerAnimTimer->Stop();
 
+            SavePlayerData();
+
             MessageBox::Show("Игра окончена! Ваше здоровье опустилось до нуля.",
                 "Поражение",
                 MessageBoxButtons::OK,
@@ -1185,10 +1317,11 @@ namespace CppCLRWinFormsProject {
 
             this->Close();
         }
+
         void ShowEnemyAttackEffect(GameCharacter^ enemy)
         {
             PictureBox^ attackEffect = gcnew PictureBox();
-            attackEffect->Size = System::Drawing::Size(40, 40); // Увеличим размер для крови
+            attackEffect->Size = System::Drawing::Size(40, 40);
             attackEffect->Location = System::Drawing::Point(enemy->X, enemy->Y);
             attackEffect->BackColor = Color::Transparent;
 

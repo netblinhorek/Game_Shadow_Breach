@@ -8,6 +8,7 @@ namespace CppCLRWinFormsProject {
 	using namespace System::Windows::Forms;
 	using namespace System::Data;
 	using namespace System::Drawing;
+	using namespace System::IO;
 
 	/// <summary>
 	/// Summary for Registration
@@ -32,6 +33,9 @@ namespace CppCLRWinFormsProject {
 			origTextBoxPassword = this->textBoxPassword->Bounds;
 
 			this->Resize += gcnew EventHandler(this, &Registration::Registration_Resize);
+
+			this->textBoxEmail->Leave += gcnew EventHandler(this, &Registration::CheckUserCredentials);
+			this->textBoxPassword->Leave += gcnew EventHandler(this, &Registration::CheckUserCredentials);
 		}
 
 	protected:
@@ -73,48 +77,6 @@ namespace CppCLRWinFormsProject {
 		System::Drawing::Rectangle origTextBoxEmail;
 		System::Drawing::Rectangle origTextBoxPassword;
 
-		void SaveToCSV(String^ name, String^ email, String^ password)
-		{
-			try
-			{
-				String^ csvPath = "visits.csv";
-				array<String^>^ lines = {};
-				int nextNumber = 1;
-
-				if (System::IO::File::Exists(csvPath))
-				{
-					lines = System::IO::File::ReadAllLines(csvPath);
-					for (int i = lines->Length - 1; i >= 0; i--)
-					{
-						if (lines[i]->Trim()->Length > 0 && !lines[i]->StartsWith("Номер"))
-						{
-							array<String^>^ parts = lines[i]->Split(';');
-							if (parts->Length > 0)
-							{
-								int num;
-								if (Int32::TryParse(parts[0], num))
-								{
-									nextNumber = num + 1;
-									break;
-								}
-							}
-						}
-					}
-				}
-
-				String^ line = String::Format("{0};{1};{2};{3}", nextNumber, name, email, password);
-				System::IO::File::AppendAllText(csvPath, line + Environment::NewLine);
-
-				MessageBox::Show("Данные успешно сохранены!", "Успех",
-					MessageBoxButtons::OK, MessageBoxIcon::Information);
-			}
-			catch (Exception^ ex)
-			{
-				MessageBox::Show("Ошибка сохранения: " + ex->Message, "Ошибка",
-					MessageBoxButtons::OK, MessageBoxIcon::Error);
-			}
-		}
-
 		void LoadBackgroundImage()
 		{
 			try
@@ -150,6 +112,61 @@ namespace CppCLRWinFormsProject {
 				MessageBox::Show("Ошибка загрузки изображения: " + ex->Message,
 					"Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
 			}
+		}
+
+		System::Void CheckUserCredentials(System::Object^ sender, System::EventArgs^ e)
+		{
+			String^ email = textBoxEmail->Text->Trim();
+			String^ password = textBoxPassword->Text->Trim();
+
+			if (email->Length > 0 && password->Length > 0)
+			{
+				String^ foundName = FindUserByNameAndPassword(email, password);
+				if (foundName != nullptr)
+				{
+					textBoxName->Text = foundName;
+					MessageBox::Show("Добро пожаловать назад, " + foundName + "!", "Автозаполнение",
+						MessageBoxButtons::OK, MessageBoxIcon::Information);
+				}
+			}
+		}
+
+		String^ FindUserByNameAndPassword(String^ email, String^ password)
+		{
+			try
+			{
+				String^ csvPath = "visits.csv";
+				if (File::Exists(csvPath))
+				{
+					array<String^>^ lines = File::ReadAllLines(csvPath);
+
+					for (int i = 1; i < lines->Length; i++) 
+					{
+						if (lines[i]->Trim()->Length > 0)
+						{
+							array<String^>^ parts = lines[i]->Split(';');
+							if (parts->Length >= 4) 
+							{
+								String^ storedEmail = parts[2]->Trim();
+								String^ storedPassword = parts[3]->Trim();
+								String^ storedName = parts[1]->Trim();
+
+								if (String::Equals(storedEmail, email, StringComparison::OrdinalIgnoreCase) &&
+									String::Equals(storedPassword, password))
+								{
+									return storedName;
+								}
+							}
+						}
+					}
+				}
+			}
+			catch (Exception^ ex)
+			{
+				MessageBox::Show("Ошибка чтения файла: " + ex->Message, "Ошибка",
+					MessageBoxButtons::OK, MessageBoxIcon::Error);
+			}
+			return nullptr; 
 		}
 
 #pragma region Windows Form Designer generated code
@@ -267,7 +284,6 @@ namespace CppCLRWinFormsProject {
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(1359, 793);
 
-
 			this->Controls->Add(this->labelTitle);
 			this->Controls->Add(this->labelName);
 			this->Controls->Add(this->labelEmail);
@@ -307,6 +323,92 @@ namespace CppCLRWinFormsProject {
 
 			this->DialogResult = System::Windows::Forms::DialogResult::OK;
 			this->Close();
+		}
+
+		bool IsEmailAlreadyExists(String^ email)
+		{
+			try
+			{
+				String^ csvPath = "visits.csv";
+				if (File::Exists(csvPath))
+				{
+					array<String^>^ lines = File::ReadAllLines(csvPath);
+
+					for (int i = 1; i < lines->Length; i++) 
+					{
+						if (lines[i]->Trim()->Length > 0)
+						{
+							array<String^>^ parts = lines[i]->Split(';');
+							if (parts->Length >= 3)
+							{
+								String^ storedEmail = parts[2]->Trim();
+								if (String::Equals(storedEmail, email, StringComparison::OrdinalIgnoreCase))
+								{
+									return true;
+								}
+							}
+						}
+					}
+				}
+			}
+			catch (Exception^ ex)
+			{
+				MessageBox::Show("Ошибка проверки почты: " + ex->Message, "Ошибка",
+					MessageBoxButtons::OK, MessageBoxIcon::Error);
+			}
+			return false;
+		}
+
+		void SaveToCSV(String^ name, String^ email, String^ password)
+		{
+			try
+			{
+				String^ csvPath = "visits.csv";
+				array<String^>^ lines = {};
+				int nextNumber = 1;
+
+				if (System::IO::File::Exists(csvPath))
+				{
+					lines = System::IO::File::ReadAllLines(csvPath);
+					for (int i = lines->Length - 1; i >= 0; i--)
+					{
+						if (lines[i]->Trim()->Length > 0 && !lines[i]->StartsWith("Номер"))
+						{
+							array<String^>^ parts = lines[i]->Split(';');
+							if (parts->Length > 0)
+							{
+								int num;
+								if (Int32::TryParse(parts[0], num))
+								{
+									nextNumber = num + 1;
+									break;
+								}
+							}
+						}
+					}
+				}
+
+				String^ line = String::Format("{0};{1};{2};{3};{4};{5};{6};{7}",
+					nextNumber, name, email, password, 0, 0, 0, 10);
+
+				if (nextNumber == 1 && !System::IO::File::Exists(csvPath))
+				{
+					String^ header = "Номер;Имя;Почта;Пароль;Монеты;Зелье;Ключи;Урон";
+					System::IO::File::WriteAllText(csvPath, header + Environment::NewLine + line + Environment::NewLine);
+				}
+				else
+				{
+					System::IO::File::AppendAllText(csvPath, line + Environment::NewLine);
+				}
+
+				MessageBox::Show("Данные успешно сохранены!", "Успех",
+					MessageBoxButtons::OK, MessageBoxIcon::Information);
+			}
+			catch (Exception^ ex)
+			{
+				MessageBox::Show("Ошибка сохранения: " + ex->Message, "Ошибка",
+					MessageBoxButtons::OK, MessageBoxIcon::Error);
+			}
 		}
 
 		System::Void buttonBack_Click(System::Object^ sender, System::EventArgs^ e)
