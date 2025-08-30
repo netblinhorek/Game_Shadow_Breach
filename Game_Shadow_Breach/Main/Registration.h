@@ -1,5 +1,5 @@
 #pragma once
-#include "Main.h"
+
 namespace CppCLRWinFormsProject {
 
 	using namespace System;
@@ -18,7 +18,20 @@ namespace CppCLRWinFormsProject {
 		Registration(void)
 		{
 			InitializeComponent();
-			LoadBackgroundImage(); // ВЫЗОВИТЕ МЕТОД ЗДЕСЬ
+			LoadBackgroundImage();
+			baseClientSize = this->ClientSize;
+
+			origBtnRegister = this->buttonRegister->Bounds;
+			origBtnBack = this->buttonBack->Bounds;
+			origLabelTitle = this->labelTitle->Bounds;
+			origLabelName = this->labelName->Bounds;
+			origLabelEmail = this->labelEmail->Bounds;
+			origLabelPassword = this->labelPassword->Bounds;
+			origTextBoxName = this->textBoxName->Bounds;
+			origTextBoxEmail = this->textBoxEmail->Bounds;
+			origTextBoxPassword = this->textBoxPassword->Bounds;
+
+			this->Resize += gcnew EventHandler(this, &Registration::Registration_Resize);
 		}
 
 	protected:
@@ -49,20 +62,28 @@ namespace CppCLRWinFormsProject {
 		System::Windows::Forms::Button^ buttonRegister;
 		System::Windows::Forms::Button^ buttonBack;
 
+		System::Drawing::Size baseClientSize;
+		System::Drawing::Rectangle origBtnRegister;
+		System::Drawing::Rectangle origBtnBack;
+		System::Drawing::Rectangle origLabelTitle;
+		System::Drawing::Rectangle origLabelName;
+		System::Drawing::Rectangle origLabelEmail;
+		System::Drawing::Rectangle origLabelPassword;
+		System::Drawing::Rectangle origTextBoxName;
+		System::Drawing::Rectangle origTextBoxEmail;
+		System::Drawing::Rectangle origTextBoxPassword;
+
 		void SaveToCSV(String^ name, String^ email, String^ password)
 		{
 			try
 			{
 				String^ csvPath = "visits.csv";
-
-				// Читаем существующие строки для подсчета номера
 				array<String^>^ lines = {};
 				int nextNumber = 1;
 
 				if (System::IO::File::Exists(csvPath))
 				{
 					lines = System::IO::File::ReadAllLines(csvPath);
-					// Ищем последний номер
 					for (int i = lines->Length - 1; i >= 0; i--)
 					{
 						if (lines[i]->Trim()->Length > 0 && !lines[i]->StartsWith("Номер"))
@@ -81,10 +102,7 @@ namespace CppCLRWinFormsProject {
 					}
 				}
 
-				// Формируем новую строку с номером
 				String^ line = String::Format("{0};{1};{2};{3}", nextNumber, name, email, password);
-
-				// Добавляем новую строку
 				System::IO::File::AppendAllText(csvPath, line + Environment::NewLine);
 
 				MessageBox::Show("Данные успешно сохранены!", "Успех",
@@ -111,16 +129,8 @@ namespace CppCLRWinFormsProject {
 					if (System::IO::File::Exists(path))
 					{
 						pictureBox1->Image = Image::FromFile(path);
-
-						if (path->EndsWith(".gif", StringComparison::OrdinalIgnoreCase))
-						{
-							pictureBox1->SizeMode = PictureBoxSizeMode::Zoom;
-						}
-						else
-						{
-							pictureBox1->SizeMode = PictureBoxSizeMode::StretchImage;
-						}
-
+						pictureBox1->SizeMode = path->EndsWith(".gif", StringComparison::OrdinalIgnoreCase) ?
+							PictureBoxSizeMode::Zoom : PictureBoxSizeMode::StretchImage;
 						pictureBox1->Dock = DockStyle::Fill;
 						imageLoaded = true;
 						break;
@@ -142,12 +152,7 @@ namespace CppCLRWinFormsProject {
 			}
 		}
 
-
 #pragma region Windows Form Designer generated code
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
 		void InitializeComponent(void)
 		{
 			this->pictureBox1 = (gcnew System::Windows::Forms::PictureBox());
@@ -163,9 +168,7 @@ namespace CppCLRWinFormsProject {
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->BeginInit();
 			this->SuspendLayout();
 
-			// 
 			// pictureBox1
-			// 
 			this->pictureBox1->Dock = System::Windows::Forms::DockStyle::Fill;
 			this->pictureBox1->Location = System::Drawing::Point(0, 0);
 			this->pictureBox1->Name = L"pictureBox1";
@@ -174,57 +177,50 @@ namespace CppCLRWinFormsProject {
 			this->pictureBox1->TabStop = false;
 			this->pictureBox1->BackColor = Color::Black;
 
-			// 
 			// labelTitle
-			// 
 			this->labelTitle->AutoSize = true;
 			this->labelTitle->Font = gcnew System::Drawing::Font("Arial", 36, FontStyle::Bold);
 			this->labelTitle->ForeColor = Color::White;
 			this->labelTitle->BackColor = Color::Black;
 			this->labelTitle->Text = "Регистрация";
 			this->labelTitle->Location = Point(350, 100);
+			this->labelTitle->BringToFront();
 
-			// 
 			// labelName
-			// 
 			this->labelName->AutoSize = true;
 			this->labelName->Font = gcnew System::Drawing::Font("Arial", 14, FontStyle::Bold);
 			this->labelName->ForeColor = Color::White;
 			this->labelName->BackColor = Color::Black;
 			this->labelName->Text = "Имя:";
 			this->labelName->Location = Point(400, 300);
+			this->labelName->BringToFront();
 
-			// 
 			// textBoxName
-			// 
 			this->textBoxName->Font = gcnew System::Drawing::Font("Arial", 12);
 			this->textBoxName->Location = Point(650, 300);
 			this->textBoxName->Size = Drawing::Size(300, 30);
 			this->textBoxName->BackColor = Color::White;
 			this->textBoxName->ForeColor = Color::Black;
+			this->textBoxName->BringToFront();
 
-			// 
 			// labelEmail
-			// 
 			this->labelEmail->AutoSize = true;
 			this->labelEmail->Font = gcnew System::Drawing::Font("Arial", 14, FontStyle::Bold);
 			this->labelEmail->ForeColor = Color::White;
 			this->labelEmail->BackColor = Color::Black;
 			this->labelEmail->Text = "Почта:";
 			this->labelEmail->Location = Point(400, 390);
+			this->labelEmail->BringToFront();
 
-			// 
 			// textBoxEmail
-			// 
 			this->textBoxEmail->Font = gcnew System::Drawing::Font("Arial", 12);
 			this->textBoxEmail->Location = Point(650, 390);
 			this->textBoxEmail->Size = Drawing::Size(300, 30);
 			this->textBoxEmail->BackColor = Color::White;
 			this->textBoxEmail->ForeColor = Color::Black;
+			this->textBoxEmail->BringToFront();
 
-			// 
 			// labelPassword
-			// 
 			this->labelPassword->AutoSize = true;
 			this->labelPassword->Font = gcnew System::Drawing::Font("Arial", 14, FontStyle::Bold);
 			this->labelPassword->ForeColor = Color::White;
@@ -233,19 +229,16 @@ namespace CppCLRWinFormsProject {
 			this->labelPassword->Location = Point(400, 480);
 			this->labelPassword->BringToFront();
 
-			// 
 			// textBoxPassword
-			// 
 			this->textBoxPassword->Font = gcnew System::Drawing::Font("Arial", 12);
 			this->textBoxPassword->Location = Point(650, 480);
 			this->textBoxPassword->Size = Drawing::Size(300, 30);
 			this->textBoxPassword->BackColor = Color::White;
 			this->textBoxPassword->ForeColor = Color::Black;
 			this->textBoxPassword->PasswordChar = '*';
+			this->textBoxPassword->BringToFront();
 
-			// 
 			// buttonRegister
-			// 
 			this->buttonRegister->Font = gcnew System::Drawing::Font("Arial", 14, FontStyle::Bold);
 			this->buttonRegister->Location = Point(400, 570);
 			this->buttonRegister->Size = Drawing::Size(550, 60);
@@ -254,11 +247,10 @@ namespace CppCLRWinFormsProject {
 			this->buttonRegister->ForeColor = Color::White;
 			this->buttonRegister->FlatStyle = FlatStyle::Flat;
 			this->buttonRegister->Cursor = Cursors::Hand;
-			//this->buttonRegister->Click += gcnew System::EventHandler(this, &Registration::buttonRegister_Click);
+			this->buttonRegister->Click += gcnew System::EventHandler(this, &Registration::buttonRegister_Click);
+			this->buttonRegister->BringToFront();
 
-			// 
 			// buttonBack
-			// 
 			this->buttonBack->Font = gcnew System::Drawing::Font("Arial", 14, FontStyle::Bold);
 			this->buttonBack->Location = Point(10, 20);
 			this->buttonBack->Size = Drawing::Size(200, 60);
@@ -268,17 +260,14 @@ namespace CppCLRWinFormsProject {
 			this->buttonBack->FlatStyle = FlatStyle::Flat;
 			this->buttonBack->Cursor = Cursors::Hand;
 			this->buttonBack->Click += gcnew System::EventHandler(this, &Registration::buttonBack_Click);
+			this->buttonBack->BringToFront();
 
-			// 
-			// Registration
-			// 
+			// Registration Form
 			this->AutoScaleDimensions = System::Drawing::SizeF(12, 25);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(1359, 793);
-			this->Controls->Add(this->pictureBox1);
-			this->pictureBox1->SendToBack();
 
-			// Добавляем элементы управления поверх фона
+
 			this->Controls->Add(this->labelTitle);
 			this->Controls->Add(this->labelName);
 			this->Controls->Add(this->labelEmail);
@@ -288,17 +277,8 @@ namespace CppCLRWinFormsProject {
 			this->Controls->Add(this->textBoxPassword);
 			this->Controls->Add(this->buttonRegister);
 			this->Controls->Add(this->buttonBack);
+			this->Controls->Add(this->pictureBox1);
 
-			// Убеждаемся, что все элементы видны поверх фона
-			this->labelTitle->BringToFront();
-			this->labelName->BringToFront();
-			this->labelEmail->BringToFront();
-			this->labelPassword->BringToFront();
-			this->textBoxName->BringToFront();
-			this->textBoxEmail->BringToFront();
-			this->textBoxPassword->BringToFront();
-			this->buttonRegister->BringToFront();
-			this->buttonBack->BringToFront();
 			this->Name = L"Registration";
 			this->Text = L"Регистрация - Вход";
 			this->StartPosition = FormStartPosition::CenterScreen;
@@ -306,46 +286,57 @@ namespace CppCLRWinFormsProject {
 			this->ResumeLayout(false);
 		}
 
-		//System::Void buttonRegister_Click(System::Object^ sender, System::EventArgs^ e)
-		//{
-		//	String^ name = textBoxName->Text->Trim();
-		//	String^ email = textBoxEmail->Text->Trim();
-		//	String^ password = textBoxPassword->Text->Trim();
+		System::Void buttonRegister_Click(System::Object^ sender, System::EventArgs^ e)
+		{
+			String^ name = textBoxName->Text->Trim();
+			String^ email = textBoxEmail->Text->Trim();
+			String^ password = textBoxPassword->Text->Trim();
 
-		//	if (name->Length == 0 || email->Length == 0 || password->Length == 0)
-		//	{
-		//		MessageBox::Show("Пожалуйста, заполните все поля!", "Предупреждение",
-		//			MessageBoxButtons::OK, MessageBoxIcon::Warning);
-		//		return;
-		//	}
+			if (name->Length == 0 || email->Length == 0 || password->Length == 0)
+			{
+				MessageBox::Show("Пожалуйста, заполните все поля!", "Предупреждение",
+					MessageBoxButtons::OK, MessageBoxIcon::Warning);
+				return;
+			}
 
-		//	SaveToCSV(name, email, password);
+			SaveToCSV(name, email, password);
 
-		//	// Очищаем поля после сохранения
-		//	textBoxName->Text = "";
-		//	textBoxEmail->Text = "";
-		//	textBoxPassword->Text = "";
+			textBoxName->Text = "";
+			textBoxEmail->Text = "";
+			textBoxPassword->Text = "";
 
-		//	// Закрываем форму регистрации и открываем главное меню
-		//	this->Hide(); // Скрываем форму регистрации
+			this->DialogResult = System::Windows::Forms::DialogResult::OK;
+			this->Close();
+		}
 
-		//	try
-		//	{
-		//		// Создаем и показываем главное меню
-		//		Main^ mainForm = gcnew Main();
-		//		mainForm->ShowDialog(); // ИСПРАВЛЕНО: ShowDialog() вместо Show()
-		//	}
-		//	catch (Exception^ ex)
-		//	{
-		//		MessageBox::Show("Ошибка при открытии главного меню: " + ex->Message,
-		//			"Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-		//	}
-
-		//	this->Close(); // Закрываем форму регистрации
-		//}
 		System::Void buttonBack_Click(System::Object^ sender, System::EventArgs^ e)
 		{
+			this->DialogResult = System::Windows::Forms::DialogResult::Cancel;
 			this->Close();
+		}
+
+		System::Void Registration_Resize(System::Object^ sender, System::EventArgs^ e)
+		{
+			if (baseClientSize.Width == 0 || baseClientSize.Height == 0) return;
+			double sx = (double)this->ClientSize.Width / (double)baseClientSize.Width;
+			double sy = (double)this->ClientSize.Height / (double)baseClientSize.Height;
+
+			this->buttonRegister->Bounds = ScaleRect(origBtnRegister, sx, sy);
+			this->buttonBack->Bounds = ScaleRect(origBtnBack, sx, sy);
+			this->labelTitle->Bounds = ScaleRect(origLabelTitle, sx, sy);
+			this->labelName->Bounds = ScaleRect(origLabelName, sx, sy);
+			this->labelEmail->Bounds = ScaleRect(origLabelEmail, sx, sy);
+			this->labelPassword->Bounds = ScaleRect(origLabelPassword, sx, sy);
+			this->textBoxName->Bounds = ScaleRect(origTextBoxName, sx, sy);
+			this->textBoxEmail->Bounds = ScaleRect(origTextBoxEmail, sx, sy);
+			this->textBoxPassword->Bounds = ScaleRect(origTextBoxPassword, sx, sy);
+		}
+
+		System::Drawing::Rectangle ScaleRect(System::Drawing::Rectangle r, double sx, double sy)
+		{
+			return System::Drawing::Rectangle(
+				(int)(r.X * sx), (int)(r.Y * sy), (int)(r.Width * sx), (int)(r.Height * sy)
+			);
 		}
 #pragma endregion
 	};

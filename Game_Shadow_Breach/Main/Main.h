@@ -3,6 +3,7 @@
 #include "Settings.h"
 #include "Shop.h"
 #include "Registration.h"
+
 namespace CppCLRWinFormsProject {
 
 	using namespace System;
@@ -214,7 +215,7 @@ namespace CppCLRWinFormsProject {
 			this->pictureBox1->TabStop = false;
 
 			// 
-			// labelTitle - надпись "Shadow Breach"
+			// labelTitle
 			// 
 			this->labelTitle->AutoSize = true;
 			this->labelTitle->Font = gcnew System::Drawing::Font("Arial", 30, FontStyle::Bold);
@@ -226,7 +227,7 @@ namespace CppCLRWinFormsProject {
 			this->labelTitle->Size = Drawing::Size(400, 150);
 
 			// 
-			// buttonLogin - Войти в аккаунт
+			// buttonLogin 
 			// 
 			this->buttonLogin->Location = System::Drawing::Point(85, 280);
 			this->buttonLogin->Name = L"buttonLogin";
@@ -275,9 +276,17 @@ namespace CppCLRWinFormsProject {
 			try
 			{
 				CppCLRWinFormsProject::Registration^ reg = gcnew CppCLRWinFormsProject::Registration();
-				this->Hide();
-				reg->ShowDialog();
-				this->Close();
+
+				System::Windows::Forms::DialogResult result = reg->ShowDialog();
+
+				if (result == System::Windows::Forms::DialogResult::OK)
+				{
+					MessageBox::Show("Регистрация прошла успешно!", "Успех",
+						MessageBoxButtons::OK, MessageBoxIcon::Information);
+				}
+				else if (result == System::Windows::Forms::DialogResult::Cancel)
+				{
+				}
 			}
 			catch (Exception^ ex)
 			{
@@ -285,7 +294,6 @@ namespace CppCLRWinFormsProject {
 					MessageBoxButtons::OK, MessageBoxIcon::Error);
 			}
 		}
-
 		System::Void button1_Click_1(System::Object^ sender, System::EventArgs^ e)
 		{
 			try
