@@ -33,6 +33,10 @@ namespace CppCLRWinFormsProject {
 			this->Resize += gcnew EventHandler(this, &Main::Main_Resize);
 			currentUserName = nullptr;
 			currentUserCoins = 0;
+			
+			Console::WriteLine("Main constructor - labelUserInfo location: " + labelUserInfo->Location);
+			Console::WriteLine("Main constructor - labelUserInfo visible: " + labelUserInfo->Visible);
+
 			LoadUserData();
 			UpdateUserInfoDisplay();
 		}
@@ -132,18 +136,7 @@ namespace CppCLRWinFormsProject {
 			this->pictureBox1 = (gcnew System::Windows::Forms::PictureBox());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->BeginInit();
 			this->SuspendLayout();
-
-			//
-			// labelUserInfo
-			//
-			this->labelUserInfo->AutoSize = true;
-			this->labelUserInfo->Font = gcnew System::Drawing::Font("Arial", 12, FontStyle::Bold);
-			this->labelUserInfo->ForeColor = Color::White;
-			this->labelUserInfo->BackColor = Color::Black;
-			this->labelUserInfo->Location = Point(1000, 55);
-			this->labelUserInfo->Size = Drawing::Size(300, 50);
-			this->labelUserInfo->Text = "Гость"; 
-			   
+ 
 
 			// 
 			// button1
@@ -312,31 +305,36 @@ namespace CppCLRWinFormsProject {
 					array<String^>^ lines = System::IO::File::ReadAllLines(csvPath);
 
 					bool hasUserData = false;
+					String^ lastUserName = nullptr;
+					int lastUserCoins = 0;
 
-					for (int i = lines->Length - 1; i >= 0; i--)
+					for (int i = lines->Length - 1; i >= 1; i--)
 					{
-						if (lines[i]->Trim()->Length > 0 && !lines[i]->StartsWith("Номер"))
+						if (lines[i]->Trim()->Length > 0)
 						{
 							array<String^>^ parts = lines[i]->Split(';');
-							if (parts->Length >= 8) 
+							if (parts->Length >= 8)
 							{
-								currentUserName = parts[1]; 
+								lastUserName = parts[1]->Trim();
 
-								
 								int coins;
-								if (Int32::TryParse(parts[4], coins))
-									currentUserCoins = coins;
+								if (Int32::TryParse(parts[4]->Trim(), coins))
+									lastUserCoins = coins;
 								else
-									currentUserCoins = 0;
+									lastUserCoins = 0;
 
 								hasUserData = true;
-								break;
+								break; 
 							}
 						}
 					}
 
-					
-					if (!hasUserData)
+					if (hasUserData)
+					{
+						currentUserName = lastUserName;
+						currentUserCoins = lastUserCoins;
+					}
+					else
 					{
 						currentUserName = nullptr;
 						currentUserCoins = 0;
@@ -352,24 +350,32 @@ namespace CppCLRWinFormsProject {
 			{
 				currentUserName = nullptr;
 				currentUserCoins = 0;
+				MessageBox::Show("Ошибка загрузки данных: " + ex->Message,
+					"Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Warning);
 			}
 		}
-
 		void UpdateUserInfoDisplay()
 		{
+			Console::WriteLine("UpdateUserInfoDisplay:");
+			Console::WriteLine("currentUserName: " + (currentUserName != nullptr ? currentUserName : "null"));
+			Console::WriteLine("currentUserCoins: " + currentUserCoins);
+
 			if (!String::IsNullOrEmpty(currentUserName))
 			{
-				labelUserInfo->Text = String::Format("Игрок: {0}\n"
-					"Монеты: {1}",
-					currentUserName, currentUserCoins);
-				labelUserInfo->Visible = true; 
+				String^ infoText = String::Format("Игрок: {0}\nМонеты: {1}", currentUserName, currentUserCoins);
+				labelUserInfo->Text = infoText;
+				labelUserInfo->Visible = true;
+
+				Console::WriteLine("Setting text: " + infoText);
 			}
 			else
 			{
 				labelUserInfo->Text = "Гость";
+				Console::WriteLine("Setting text: Гость");
 			}
-		}
 
+			labelUserInfo->Refresh();
+		}
 		System::Void buttonLogin_Click(System::Object^ sender, System::EventArgs^ e)
 		{
 			try
@@ -407,12 +413,16 @@ namespace CppCLRWinFormsProject {
 				if (File::Exists(csvPath))
 				{
 					array<String^>^ lines = File::ReadAllLines(csvPath);
-					if (lines->Length > 1) 
+
+					for (int i = 1; i < lines->Length; i++)
 					{
-						array<String^>^ parts = lines[1]->Split(';');
-						if (parts->Length >= 2)
+						if (lines[i]->Trim()->Length > 0)
 						{
-							return parts[1]->Trim(); 
+							array<String^>^ parts = lines[i]->Split(';');
+							if (parts->Length >= 2)
+							{
+								return parts[1]->Trim();
+							}
 						}
 					}
 				}
@@ -421,19 +431,26 @@ namespace CppCLRWinFormsProject {
 			{
 				MessageBox::Show("Ошибка чтения файла: " + ex->Message);
 			}
-			return "Player"; 
+			return "Player";
 		}
-
-		// Затем создаем игру:
 		System::Void button1_Click_1(System::Object^ sender, System::EventArgs^ e)
 		{
 			try
 			{
 				String^ playerName = GetPlayerNameFromCSV();
 				CppCLRWinFormsProject::Play_game^ play_game = gcnew CppCLRWinFormsProject::Play_game(playerName);
-				this->Hide();
-				play_game->ShowDialog();
-				this->Close();
+				System::Windows::Forms::DialogResult result = play_game->ShowDialog();
+
+				LoadUserData();
+				UpdateUserInfoDisplay(); 
+
+				if (result == System::Windows::Forms::DialogResult::OK)
+				{
+					MessageBox::Show("Прогресс успешно сохранен!\nМонеты: " + currentUserCoins,
+						"Сохранение",
+						MessageBoxButtons::OK,
+						MessageBoxIcon::Information);
+				}
 			}
 			catch (Exception^ ex)
 			{
@@ -448,6 +465,9 @@ namespace CppCLRWinFormsProject {
 			{
 				CppCLRWinFormsProject::Settings^ settings = gcnew CppCLRWinFormsProject::Settings();
 				settings->ShowDialog();
+
+				LoadUserData();
+				UpdateUserInfoDisplay();
 			}
 			catch (Exception^ ex)
 			{
@@ -461,13 +481,14 @@ namespace CppCLRWinFormsProject {
 			try
 			{
 				CppCLRWinFormsProject::Shop^ shop = gcnew CppCLRWinFormsProject::Shop();
-				this->Hide();
 				shop->ShowDialog();
-				this->Close();
+
+				LoadUserData();
+				UpdateUserInfoDisplay();
 			}
 			catch (Exception^ ex)
 			{
-				MessageBox::Show("Ошибка при переходе на страницу настроек: " + ex->Message,
+				MessageBox::Show("Ошибка при переходе в магазин: " + ex->Message,
 					"Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
 			}
 		}

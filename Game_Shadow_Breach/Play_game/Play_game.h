@@ -41,9 +41,11 @@ namespace CppCLRWinFormsProject {
     public ref class Play_game : public System::Windows::Forms::Form
     {
     public:
+        property bool ShouldCloseMain;
         Play_game(String^ playerName)
         {
             currentPlayerName = playerName;
+            ShouldCloseMain = false;
             InitializeComponent();
             InitializePanels();
             LoadBackgroundImage();
@@ -899,6 +901,7 @@ namespace CppCLRWinFormsProject {
                 ::Windows::Forms::DialogResult::Yes)
             {
                 SavePlayerData();
+                ShouldCloseMain = true; 
                 this->Close();
             }
         }
