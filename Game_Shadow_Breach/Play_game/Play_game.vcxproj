@@ -174,9 +174,6 @@
     <ProjectReference Include="..\Main\Main.vcxproj">
       <Project>{5a699a61-a5db-413f-b5d2-e21952090b6d}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Play_game_2\Play_game_2.vcxproj">
-      <Project>{2462a9c9-a121-46c5-982a-cd26a76a9ee2}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -10,9 +10,6 @@ namespace CppCLRWinFormsProject {
     using namespace System::Drawing;
     using namespace System::IO;
 
-    // Предварительное объявление класса Play_game_2
-    ref class Play_game_2;
-
     public ref class GameCharacter
     {
     public:
@@ -56,7 +53,6 @@ namespace CppCLRWinFormsProject {
             InitializeEnemy();
             HideAllPanels();
 
-            // Проверка повторного входа на поле
             CheckFieldReentry();
             LoadPlayerData();
 
@@ -90,8 +86,16 @@ namespace CppCLRWinFormsProject {
         int currentPotions;
         int currentKeys;
         int currentDamage;
-        bool isFirstVisit; // Флаг первого посещения поля
-
+        bool isFirstVisit; 
+        int totalBossesToSpawn;
+        int spawnedBossesCount;
+        int bossesAlive;
+        Bitmap^ boss1Image;
+        Bitmap^ boss2Image;
+        Bitmap^ boss3Image;
+        Bitmap^ boss4Image;
+        Bitmap^ finalBossImage;
+        int bossDamage;
         System::Windows::Forms::Button^ buttonExit;
         System::Windows::Forms::Button^ buttonStatus;
         System::Windows::Forms::Button^ buttonBackpack;
@@ -105,7 +109,8 @@ namespace CppCLRWinFormsProject {
         System::Windows::Forms::Timer^ enemyAttackTimer;
         GameCharacter^ playerCharacter;
         GameCharacter^ enemyCharacter;
-
+        System::Collections::Generic::List<GameCharacter^>^ bosses;
+        System::Collections::Generic::List<System::Windows::Forms::PictureBox^>^ bossSprites;
         System::Collections::Generic::List<GameCharacter^>^ enemies;
         System::Collections::Generic::List<System::Windows::Forms::PictureBox^>^ enemySprites;
         int totalEnemiesToSpawn;
@@ -175,8 +180,6 @@ namespace CppCLRWinFormsProject {
         Bitmap^ imgGun;
         Bitmap^ imgPotion;
 
-        // Таймер для перехода на следующую форму после победы
-        System::Windows::Forms::Timer^ victoryTimer;
         bool victoryAchieved;
 
     private:
@@ -185,7 +188,6 @@ namespace CppCLRWinFormsProject {
         /// </summary>
         System::ComponentModel::Container^ components;
 
-        // Проверка повторного входа на поле
         void CheckFieldReentry()
         {
             try
@@ -200,13 +202,11 @@ namespace CppCLRWinFormsProject {
                     {
                         isFirstVisit = false;
 
-                        // Показываем сообщение о сбросе результатов
                         MessageBox::Show("Вы повторно вошли на поле. Все накопленные результаты будут сброшены!",
                             "Предупреждение",
                             MessageBoxButtons::OK,
                             MessageBoxIcon::Warning);
 
-                        // Сбрасываем результаты
                         currentCoins = 0;
                         currentPotions = 0;
                         currentKeys = 0;
@@ -215,7 +215,6 @@ namespace CppCLRWinFormsProject {
                     }
                 }
 
-                // Сохраняем информацию о посещении поля
                 File::AppendAllText(fieldStatusFile, currentPlayerName + Environment::NewLine);
             }
             catch (Exception^ ex)
@@ -246,7 +245,6 @@ namespace CppCLRWinFormsProject {
 
                                 if (String::Equals(storedName, currentPlayerName, StringComparison::OrdinalIgnoreCase))
                                 {
-                                    // Если это не первое посещение поля, не загружаем старые данные
                                     if (!isFirstVisit)
                                     {
                                         currentCoins = 0;
@@ -554,11 +552,7 @@ namespace CppCLRWinFormsProject {
             this->Resize += gcnew EventHandler(this, &Play_game::Play_game_Resize);
             ShowTutorialStep();
 
-            // Инициализация таймера победы
-            victoryTimer = gcnew Timer();
-            victoryTimer->Interval = 15000; // 15 секунд
-            victoryTimer->Tick += gcnew EventHandler(this, &Play_game::VictoryTimer_Tick);
-            victoryAchieved = false;
+      
         }
 
         void ShowTutorialStep()
@@ -639,7 +633,15 @@ namespace CppCLRWinFormsProject {
             spawnTimer = gcnew Timer();
             spawnTimer->Interval = 7000;
             spawnTimer->Tick += gcnew EventHandler(this, &Play_game::SpawnTimer_Tick);
+            bosses = gcnew System::Collections::Generic::List<GameCharacter^>();
+            bossSprites = gcnew System::Collections::Generic::List<System::Windows::Forms::PictureBox^>();
+            totalBossesToSpawn = 5; 
+            spawnedBossesCount = 0;
+            bossesAlive = 0;
+            bossDamage = 15; 
 
+            boss1Image = LoadImageTransparentFromCorner("босс_1.png");
+            finalBossImage = LoadImageTransparentFromCorner("макс_босс.png");
             String^ bloodPath = "кровь.png";
             if (System::IO::File::Exists(bloodPath))
             {
@@ -715,7 +717,8 @@ namespace CppCLRWinFormsProject {
                 ex = rng->Next(50, this->ClientSize.Width - 100);
                 ey = rng->Next(100, this->ClientSize.Height - 120);
                 attempts++;
-                bool tooCloseToPlayer = (System::Math::Abs(ex - playerCharacter->X) < 220 && System::Math::Abs(ey - playerCharacter->Y) < 220);
+                bool tooCloseToPlayer = (System::Math::Abs(ex - playerCharacter->X) < 220 && System::
+                    Math::Abs(ey - playerCharacter->Y) < 220);
                 bool tooCloseToOthers = false;
                 for (int i = 0; i < enemies->Count && !tooCloseToOthers; ++i)
                 {
@@ -965,7 +968,7 @@ namespace CppCLRWinFormsProject {
                 ::Windows::Forms::DialogResult::Yes)
             {
                 SavePlayerData();
-                ShouldCloseMain = true; // Устанавливаем флаг для закрытия Main
+                ShouldCloseMain = true; 
                 this->Close();
             }
         }
@@ -1064,7 +1067,6 @@ namespace CppCLRWinFormsProject {
                 UsePickupIfAny();
                 break;
             case Keys::Escape:
-                // Закрытие рюкзака при нажатии ESC
                 if (panelBackpack->Visible)
                 {
                     panelBackpack->Visible = false;
@@ -1116,23 +1118,41 @@ namespace CppCLRWinFormsProject {
 
                 espr->Location = System::Drawing::Point(echar->X, echar->Y);
             }
+            for (int i = bosses->Count - 1; i >= 0; i--)
+            {
+                GameCharacter^ boss = bosses[i];
+                PictureBox^ bspr = bossSprites[i];
+
+                int deltaX = 0;
+                int deltaY = 0;
+                if (boss->X < playerCharacter->X) deltaX = 1; else if (boss->X > playerCharacter->X) deltaX = -1;
+                if (boss->Y < playerCharacter->Y) deltaY = 1; else if (boss->Y > playerCharacter->Y) deltaY = -1;
+
+                boss->Move(deltaX, deltaY);
+
+                bspr->Location = System::Drawing::Point(boss->X, boss->Y);
+            }
         }
 
         System::Void SpawnTimer_Tick(System::Object^ sender, System::EventArgs^ e)
         {
-            if (spawnedEnemiesCount >= totalEnemiesCap)
+            if (spawnedEnemiesCount >= totalEnemiesCap && spawnedBossesCount >= totalBossesToSpawn)
             {
                 spawnTimer->Stop();
                 return;
             }
-            if (enemiesAlive < totalEnemiesToSpawn)
+
+            if (enemiesAlive < totalEnemiesToSpawn && spawnedEnemiesCount < totalEnemiesCap)
             {
                 SpawnOneEnemy();
-                if (spawnedEnemiesCount >= totalEnemiesCap) spawnTimer->Stop();
             }
-            else if (enemiesAlive >= totalEnemiesToSpawn)
+
+            if (spawnedEnemiesCount % 3 == 0 && spawnedBossesCount < totalBossesToSpawn && enemiesAlive > 0)
             {
+                int bossLevel = Math::Min(5, spawnedBossesCount + 1);
+                SpawnBoss(bossLevel);
             }
+         
         }
 
         void UpdateHealthUI()
@@ -1158,7 +1178,86 @@ namespace CppCLRWinFormsProject {
             }
             return true;
         }
+        void SpawnBoss(int bossLevel)
+        {
+            if (spawnedBossesCount >= totalBossesToSpawn) return;
 
+            int bx, by;
+            int attempts = 0;
+            do {
+                bx = rng->Next(100, this->ClientSize.Width - 150);
+                by = rng->Next(150, this->ClientSize.Height - 200);
+                attempts++;
+                bool tooCloseToPlayer = (System::Math::Abs(bx - playerCharacter->X) < 300 &&
+                    System::Math::Abs(by - playerCharacter->Y) < 300);
+                bool tooCloseToOthers = false;
+
+                for (int i = 0; i < bosses->Count && !tooCloseToOthers; ++i)
+                {
+                    int dx = bosses[i]->X - bx;
+                    int dy = bosses[i]->Y - by;
+                    if (dx * dx + dy * dy < 100 * 100) tooCloseToOthers = true;
+                }
+
+                if (!tooCloseToPlayer && !tooCloseToOthers) break;
+            } while (attempts < 100);
+
+            int bossHealth = 0;
+            bool isFinalBoss = false;
+
+            switch (bossLevel)
+            {
+            case 1: bossHealth = 120; break;
+            case 2: bossHealth = 180; break;
+            case 3: bossHealth = 240; break;
+            case 4: bossHealth = 300; break;
+            case 5:
+                bossHealth = 500;
+                isFinalBoss = true;
+                break;
+            }
+
+            GameCharacter^ boss = gcnew GameCharacter(bx, by, bossHealth, 1.5f, "Boss");
+            PictureBox^ sprite = gcnew PictureBox();
+
+            if (isFinalBoss)
+            {
+                sprite->Size = System::Drawing::Size(80, 80); 
+                sprite->Image = finalBossImage;
+            }
+            else
+            {
+                sprite->Size = System::Drawing::Size(60, 60); 
+                sprite->Image = boss1Image;
+            }
+
+            sprite->Location = System::Drawing::Point(boss->X, boss->Y);
+            sprite->BackColor = Color::Transparent;
+            sprite->SizeMode = PictureBoxSizeMode::StretchImage;
+            sprite->Tag = bossHealth;
+
+            if (sprite->Image == nullptr)
+            {
+                Label^ bossLabel = gcnew Label();
+                bossLabel->Text = isFinalBoss ? "FB" : "B";
+                bossLabel->Font = gcnew System::Drawing::Font("Arial", isFinalBoss ? 20 : 16, FontStyle::Bold);
+                bossLabel->ForeColor = isFinalBoss ? Color::Purple : Color::Orange;
+                bossLabel->BackColor = Color::Transparent;
+                bossLabel->Dock = DockStyle::Fill;
+                bossLabel->TextAlign = ContentAlignment::MiddleCenter;
+                sprite->Controls->Add(bossLabel);
+            }
+
+            sprite->Parent = pictureBox1;
+            pictureBox1->Controls->Add(sprite);
+            sprite->BringToFront();
+
+            bosses->Add(boss);
+            bossSprites->Add(sprite);
+            bossesAlive++;
+            spawnedBossesCount++;
+
+        }
         void AttackEnemy()
         {
             switch (playerDirection)
@@ -1177,6 +1276,59 @@ namespace CppCLRWinFormsProject {
 
             if (!tutorialCompleted) return;
             int damage = baseDamage + (hasGun ? 10 : 0);
+
+            const int bossRange = 160;
+            int bestBossIdx = -1;
+            int bestBossDist2 = 99999999;
+
+            for (int i = 0; i < bosses->Count; i++)
+            {
+                if (!IsEnemyInFront(bosses[i])) continue;
+                int dx = bosses[i]->X - playerCharacter->X;
+                int dy = bosses[i]->Y - playerCharacter->Y;
+                int d2 = dx * dx + dy * dy;
+                if (d2 < bestBossDist2 && d2 <= bossRange * bossRange)
+                {
+                    bestBossDist2 = d2;
+                    bestBossIdx = i;
+                }
+            }
+
+            if (bestBossIdx >= 0)
+            {
+                int currentHealth = safe_cast<int>(bossSprites[bestBossIdx]->Tag);
+                currentHealth -= damage;
+                bossSprites[bestBossIdx]->Tag = currentHealth;
+
+                if (explosionImage != nullptr)
+                {
+                    Image^ originalImage = bossSprites[bestBossIdx]->Image;
+
+                    bossSprites[bestBossIdx]->Image = explosionImage;
+
+                    Timer^ resetTimer = gcnew Timer();
+                    resetTimer->Interval = 200;
+                    resetTimer->Tag = Tuple::Create(bossSprites[bestBossIdx], originalImage);
+                    resetTimer->Tick += gcnew EventHandler(this, &Play_game::ResetBossImage);
+                    resetTimer->Start();
+                }
+
+                if (currentHealth <= 0)
+                {
+                    pictureBox1->Controls->Remove(bossSprites[bestBossIdx]);
+
+                    DropItemAt(bosses[bestBossIdx]->X, bosses[bestBossIdx]->Y);
+                    DropItemAt(bosses[bestBossIdx]->X + 30, bosses[bestBossIdx]->Y + 30);
+
+                    bossSprites->RemoveAt(bestBossIdx);
+                    bosses->RemoveAt(bestBossIdx);
+                    bossesAlive--;
+
+                    CheckVictory();
+                }
+                return;
+            }
+            if (!tutorialCompleted) return;
 
             const int maxRange = 140;
             int bestIdx = -1;
@@ -1217,16 +1369,34 @@ namespace CppCLRWinFormsProject {
                     enemies->RemoveAt(bestIdx);
                     enemiesAlive--;
 
-                    // Проверка победы
                     if (enemiesAlive <= 0 && tutorialCompleted && spawnedEnemiesCount >= totalEnemiesCap)
                     {
-                        Victory();
                     }
                 }
             }
         }
 
-        // Обработка победы
+        System::Void ResetBossImage(System::Object^ sender, System::EventArgs^ e)
+        {
+            Timer^ timer = safe_cast<Timer^>(sender);
+            System::Tuple<System::Windows::Forms::PictureBox^, System::Drawing::Image^>^ tuple =
+                safe_cast<System::Tuple<System::Windows::Forms::PictureBox^, System::Drawing::Image^>^>(timer->Tag);
+
+            tuple->Item1->Image = tuple->Item2;
+            timer->Stop();
+            delete timer;
+        }
+
+
+        void CheckVictory()
+        {
+            if (enemiesAlive <= 0 && bossesAlive <= 0 && tutorialCompleted &&
+                spawnedEnemiesCount >= totalEnemiesCap && spawnedBossesCount >= totalBossesToSpawn)
+            {
+                Victory();
+            }
+        }
+
         void Victory()
         {
             if (victoryAchieved) return;
@@ -1235,39 +1405,14 @@ namespace CppCLRWinFormsProject {
             enemyTimer->Stop();
             spawnTimer->Stop();
             enemyAttackTimer->Stop();
+            playerAnimTimer->Stop();
+            playerAttackTimer->Stop();
 
-            MessageBox::Show("Победа! Все враги побеждены. Через 15 секунд вы перейдете на следующий уровень.",
-                "Победа",
+            MessageBox::Show("ПОБЕДА! Все враги и боссы побеждены!\nВы завершили игру!",
+                "ПОБЕДА",
                 MessageBoxButtons::OK,
-                MessageBoxIcon::Information);
-
-            // Запускаем таймер для перехода на следующую форму
-            victoryTimer->Start();
+                MessageBoxIcon::Exclamation);
         }
-
-        // Таймер перехода на Play_game_2
-        System::Void VictoryTimer_Tick(System::Object^ sender, System::EventArgs^ e)
-        {
-            victoryTimer->Stop();
-            TransitionToNextLevel();
-        }
-
-        // Переход на следующую форму
-        void TransitionToNextLevel()
-        {
-            SavePlayerData();
-
-            // Закрываем текущую форму
-            this->Close();
-
-            // Здесь будет код для открытия Play_game_2
-            // Временно просто показываем сообщение
-            MessageBox::Show("Переход на следующий уровень!",
-                "Переход",
-                MessageBoxButtons::OK,
-                MessageBoxIcon::Information);
-        }
-
 
 
         System::Void PlayerAttackTimer_Tick(System::Object^ sender,
@@ -1353,7 +1498,6 @@ namespace CppCLRWinFormsProject {
                 itemTypes->RemoveAt(bestIdx);
                 UpdateBackpackUI();
 
-                // Автоматически закрываем рюкзак после использования предмета
                 panelBackpack->Visible = false;
 
                 SavePlayerData();
@@ -1414,6 +1558,30 @@ namespace CppCLRWinFormsProject {
                     ShowEnemyAttackEffect(enemy);
                 }
             }
+            for (int i = 0; i < bosses->Count; i++)
+            {
+                GameCharacter^ boss = bosses[i];
+
+                int dx = boss->X - playerCharacter->X;
+                int dy = boss->Y - playerCharacter->Y;
+                int distanceSquared = dx * dx + dy * dy;
+                int bossAttackRange = 80;
+
+                if (distanceSquared <= bossAttackRange * bossAttackRange)
+                {
+                    playerCharacter->Health -= bossDamage;
+                    UpdateHealthUI();
+
+                    if (playerCharacter->Health <= 0)
+                    {
+                        playerCharacter->Health = 0;
+                        GameOver();
+                    }
+
+                    ShowEnemyAttackEffect(boss);
+                }
+            }
+
         }
 
         void GameOver()
@@ -1422,7 +1590,6 @@ namespace CppCLRWinFormsProject {
             spawnTimer->Stop();
             enemyAttackTimer->Stop();
             playerAnimTimer->Stop();
-            if (victoryTimer->Enabled) victoryTimer->Stop();
 
             SavePlayerData();
 
