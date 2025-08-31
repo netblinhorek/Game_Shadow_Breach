@@ -10,6 +10,9 @@ namespace CppCLRWinFormsProject {
     using namespace System::Drawing;
     using namespace System::IO;
 
+    // Предварительное объявление класса Play_game_2
+    ref class Play_game_2;
+
     public ref class GameCharacter
     {
     public:
@@ -52,6 +55,9 @@ namespace CppCLRWinFormsProject {
             InitializePlayer();
             InitializeEnemy();
             HideAllPanels();
+
+            // Проверка повторного входа на поле
+            CheckFieldReentry();
             LoadPlayerData();
 
             this->Resize += gcnew EventHandler(this, &Play_game::Play_game_Resize);
@@ -84,6 +90,7 @@ namespace CppCLRWinFormsProject {
         int currentPotions;
         int currentKeys;
         int currentDamage;
+        bool isFirstVisit; // Флаг первого посещения поля
 
         System::Windows::Forms::Button^ buttonExit;
         System::Windows::Forms::Button^ buttonStatus;
@@ -168,11 +175,56 @@ namespace CppCLRWinFormsProject {
         Bitmap^ imgGun;
         Bitmap^ imgPotion;
 
+        // Таймер для перехода на следующую форму после победы
+        System::Windows::Forms::Timer^ victoryTimer;
+        bool victoryAchieved;
+
     private:
         /// <summary>
         /// Required designer variable.
         /// </summary>
         System::ComponentModel::Container^ components;
+
+        // Проверка повторного входа на поле
+        void CheckFieldReentry()
+        {
+            try
+            {
+                String^ fieldStatusFile = "field_status.txt";
+                isFirstVisit = true;
+
+                if (File::Exists(fieldStatusFile))
+                {
+                    String^ content = File::ReadAllText(fieldStatusFile);
+                    if (content->Contains(currentPlayerName))
+                    {
+                        isFirstVisit = false;
+
+                        // Показываем сообщение о сбросе результатов
+                        MessageBox::Show("Вы повторно вошли на поле. Все накопленные результаты будут сброшены!",
+                            "Предупреждение",
+                            MessageBoxButtons::OK,
+                            MessageBoxIcon::Warning);
+
+                        // Сбрасываем результаты
+                        currentCoins = 0;
+                        currentPotions = 0;
+                        currentKeys = 0;
+                        currentDamage = 10;
+                        hasGun = false;
+                    }
+                }
+
+                // Сохраняем информацию о посещении поля
+                File::AppendAllText(fieldStatusFile, currentPlayerName + Environment::NewLine);
+            }
+            catch (Exception^ ex)
+            {
+                MessageBox::Show("Ошибка при проверке статуса поля: " + ex->Message,
+                    "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+                isFirstVisit = true;
+            }
+        }
 
         void LoadPlayerData()
         {
@@ -183,32 +235,38 @@ namespace CppCLRWinFormsProject {
                 {
                     array<String^>^ lines = File::ReadAllLines(csvPath);
 
-                    for (int i = 1; i < lines->Length; i++) 
+                    for (int i = 1; i < lines->Length; i++)
                     {
                         if (lines[i]->Trim()->Length > 0)
                         {
                             array<String^>^ parts = lines[i]->Split(';');
-                            if (parts->Length >= 8) 
+                            if (parts->Length >= 8)
                             {
                                 String^ storedName = parts[1]->Trim();
 
                                 if (String::Equals(storedName, currentPlayerName, StringComparison::OrdinalIgnoreCase))
                                 {
-                                    
-                                    currentCoins = Int32::Parse(parts[4]->Trim());
-                                    currentPotions = Int32::Parse(parts[5]->Trim());
-                                    currentKeys = Int32::Parse(parts[6]->Trim());
-                                    currentDamage = Int32::Parse(parts[7]->Trim());
+                                    // Если это не первое посещение поля, не загружаем старые данные
+                                    if (!isFirstVisit)
+                                    {
+                                        currentCoins = 0;
+                                        currentPotions = 0;
+                                        currentKeys = 0;
+                                        currentDamage = 10;
+                                    }
+                                    else
+                                    {
+                                        currentCoins = Int32::Parse(parts[4]->Trim());
+                                        currentPotions = Int32::Parse(parts[5]->Trim());
+                                        currentKeys = Int32::Parse(parts[6]->Trim());
+                                        currentDamage = Int32::Parse(parts[7]->Trim());
+                                    }
 
-                                    
                                     itemCounts["Монеты"] = currentCoins;
                                     itemCounts["Зелье"] = currentPotions;
                                     itemCounts["Ключ"] = currentKeys;
 
-                                    
                                     baseDamage = currentDamage;
-
-                                    
                                     hasGun = (currentDamage > 10);
 
                                     UpdateBackpackUI();
@@ -250,12 +308,12 @@ namespace CppCLRWinFormsProject {
                                     lines[i] = String::Format("{0};{1};{2};{3};{4};{5};{6};{7}",
                                         parts[0]->Trim(),
                                         currentPlayerName,
-                                        parts[2]->Trim(), 
-                                        parts[3]->Trim(), 
-                                        currentCoins,     
-                                        currentPotions,   
-                                        currentKeys,      
-                                        baseDamage       
+                                        parts[2]->Trim(),
+                                        parts[3]->Trim(),
+                                        currentCoins,
+                                        currentPotions,
+                                        currentKeys,
+                                        baseDamage
                                     );
                                     playerFound = true;
                                     break;
@@ -495,6 +553,12 @@ namespace CppCLRWinFormsProject {
             buttonBackpack->BringToFront();
             this->Resize += gcnew EventHandler(this, &Play_game::Play_game_Resize);
             ShowTutorialStep();
+
+            // Инициализация таймера победы
+            victoryTimer = gcnew Timer();
+            victoryTimer->Interval = 15000; // 15 секунд
+            victoryTimer->Tick += gcnew EventHandler(this, &Play_game::VictoryTimer_Tick);
+            victoryAchieved = false;
         }
 
         void ShowTutorialStep()
@@ -901,7 +965,7 @@ namespace CppCLRWinFormsProject {
                 ::Windows::Forms::DialogResult::Yes)
             {
                 SavePlayerData();
-                ShouldCloseMain = true; 
+                ShouldCloseMain = true; // Устанавливаем флаг для закрытия Main
                 this->Close();
             }
         }
@@ -999,6 +1063,13 @@ namespace CppCLRWinFormsProject {
             case Keys::E:
                 UsePickupIfAny();
                 break;
+            case Keys::Escape:
+                // Закрытие рюкзака при нажатии ESC
+                if (panelBackpack->Visible)
+                {
+                    panelBackpack->Visible = false;
+                }
+                break;
             }
         }
 
@@ -1019,7 +1090,7 @@ namespace CppCLRWinFormsProject {
 
         System::Void EnemyTimer_Tick(System::Object^ sender, System::EventArgs^ e)
         {
-            for (int i = enemies->Count - 1; i >= 0; --i)
+            for (int i = enemies->Count - 1; i >= 0; i--)
             {
                 GameCharacter^ echar = enemies[i];
                 PictureBox^ espr = enemySprites[i];
@@ -1030,7 +1101,7 @@ namespace CppCLRWinFormsProject {
                 if (echar->Y < playerCharacter->Y) deltaY = 1; else if (echar->Y > playerCharacter->Y) deltaY = -1;
                 echar->Move(deltaX * 2, deltaY * 2);
 
-                for (int j = 0; j < enemies->Count; ++j)
+                for (int j = 0; j < enemies->Count; j++)
                 {
                     if (j == i) continue;
                     int dx = echar->X - enemies[j]->X;
@@ -1110,7 +1181,7 @@ namespace CppCLRWinFormsProject {
             const int maxRange = 140;
             int bestIdx = -1;
             int bestDist2 = 99999999;
-            for (int i = 0; i < enemies->Count; ++i)
+            for (int i = 0; i < enemies->Count; i++)
             {
                 if (!IsEnemyInFront(enemies[i])) continue;
                 int dx = enemies[i]->X - playerCharacter->X;
@@ -1145,15 +1216,59 @@ namespace CppCLRWinFormsProject {
                     enemySprites->RemoveAt(bestIdx);
                     enemies->RemoveAt(bestIdx);
                     enemiesAlive--;
-                    if (enemiesAlive <= 0 && tutorialCompleted && spawnedEnemiesCount
-                        >= totalEnemiesCap)
+
+                    // Проверка победы
+                    if (enemiesAlive <= 0 && tutorialCompleted && spawnedEnemiesCount >= totalEnemiesCap)
                     {
-                        MessageBox::Show("Победа! Все враги побеждены.",
-                            "Победа");
+                        Victory();
                     }
                 }
             }
         }
+
+        // Обработка победы
+        void Victory()
+        {
+            if (victoryAchieved) return;
+
+            victoryAchieved = true;
+            enemyTimer->Stop();
+            spawnTimer->Stop();
+            enemyAttackTimer->Stop();
+
+            MessageBox::Show("Победа! Все враги побеждены. Через 15 секунд вы перейдете на следующий уровень.",
+                "Победа",
+                MessageBoxButtons::OK,
+                MessageBoxIcon::Information);
+
+            // Запускаем таймер для перехода на следующую форму
+            victoryTimer->Start();
+        }
+
+        // Таймер перехода на Play_game_2
+        System::Void VictoryTimer_Tick(System::Object^ sender, System::EventArgs^ e)
+        {
+            victoryTimer->Stop();
+            TransitionToNextLevel();
+        }
+
+        // Переход на следующую форму
+        void TransitionToNextLevel()
+        {
+            SavePlayerData();
+
+            // Закрываем текущую форму
+            this->Close();
+
+            // Здесь будет код для открытия Play_game_2
+            // Временно просто показываем сообщение
+            MessageBox::Show("Переход на следующий уровень!",
+                "Переход",
+                MessageBoxButtons::OK,
+                MessageBoxIcon::Information);
+        }
+
+
 
         System::Void PlayerAttackTimer_Tick(System::Object^ sender,
             System::EventArgs^ e)
@@ -1196,7 +1311,7 @@ namespace CppCLRWinFormsProject {
         {
             int bestIdx = -1;
             int bestD2 = 999999;
-            for (int i = 0; i < itemSprites->Count; ++i)
+            for (int i = 0; i < itemSprites->Count; i++)
             {
                 int dx = itemSprites[i]->Left - playerCharacter->X;
                 int dy = itemSprites[i]->Top - playerCharacter->Y;
@@ -1230,19 +1345,16 @@ namespace CppCLRWinFormsProject {
                 else if (t == "Пистолет")
                 {
                     hasGun = true;
-                    baseDamage = 20; 
+                    baseDamage = 20;
                 }
 
                 pictureBox1->Controls->Remove(itemSprites[bestIdx]);
                 itemSprites->RemoveAt(bestIdx);
                 itemTypes->RemoveAt(bestIdx);
                 UpdateBackpackUI();
-                panelBackpack->Visible = true;
-                panelBackpack->BringToFront();
-                buttonCloseBackpack->BringToFront();
-                buttonExit->BringToFront();
-                buttonStatus->BringToFront();
-                buttonBackpack->BringToFront();
+
+                // Автоматически закрываем рюкзак после использования предмета
+                panelBackpack->Visible = false;
 
                 SavePlayerData();
             }
@@ -1310,6 +1422,7 @@ namespace CppCLRWinFormsProject {
             spawnTimer->Stop();
             enemyAttackTimer->Stop();
             playerAnimTimer->Stop();
+            if (victoryTimer->Enabled) victoryTimer->Stop();
 
             SavePlayerData();
 
@@ -1369,7 +1482,7 @@ namespace CppCLRWinFormsProject {
 
         System::Void ExplosionTimer_Tick(System::Object^ sender, System::EventArgs^ e)
         {
-            for (int i = explosionSprites->Count - 1; i >= 0; --i)
+            for (int i = explosionSprites->Count - 1; i >= 0; i--)
             {
                 int t = explosionTicks[i] - 1;
                 explosionTicks[i] = t;
